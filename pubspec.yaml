@@ -1,0 +1,37 @@
+name: example
+description: A new Flutter project.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0-0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.5
+#  firebase: ^9.0.3
+  firebase_auth: ^4.19.2
+  firebase_core: ^2.30.0
+  cloud_firestore: ^4.8.2
+  font_awesome_flutter: ^10.5.0
+  get: ^4.6.6
+  http: ^1.2.1
+  convert:
+  google_fonts:
+  sqflite: ^2.3.3
+  file_picker: ^8.0.1
+  image_picker: ^1.1.0
+  open_filex: ^4.4.0
+  chatview:
+    path: ../
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+
+flutter:
+  uses-material-design: true
