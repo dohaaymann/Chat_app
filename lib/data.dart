@@ -6,9 +6,9 @@ class Data {
   static final messageList = [
     Message(
       id: '1',
-      message: "Hi!",
+      message: "Hello!",
       createdAt: DateTime.now(),
-      sendBy: '1', //
+      sendBy: '1',
     ),
     Message(
       id: '2',
@@ -16,6 +16,5 @@ class Data {
       createdAt: DateTime.now(),
       sendBy: '2',
     ),
-
   ];
 }

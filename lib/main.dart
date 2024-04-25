@@ -295,6 +295,7 @@
 
 
 import 'package:example/face.dart';
+import 'package:example/ui.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
@@ -335,8 +336,8 @@ class MyApp extends StatelessWidget {
       "face":(context) => face()
     },
       // home: chat(sendto: "sendto", message:" message", Id: "Id"),
-      home: FirebaseAuth.instance.currentUser?.email.toString()=='null'?face():MyHomePage(title: 'Flutter Demo Home Page') ,
-      // home: face(),
+      // home: FirebaseAuth.instance.currentUser?.email.toString()=='null'?face():MyHomePage(title: 'Flutter Demo Home Page') ,
+      home:ui("${FirebaseAuth.instance.currentUser?.uid}"),
     );
   }
 }

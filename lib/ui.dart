@@ -1,3 +1,4 @@
+import 'package:example/bot.dart';
 import 'package:example/links.dart';
 import 'package:example/ne.dart';
 import 'package:example/chat.dart';
@@ -48,7 +49,13 @@ class _uiState extends State<ui> {
       chats.add(doc.id);
     });
   }
+  var provider=FirebaseFirestore.instance.collection("provider");
+
   @override
+  fun()async{
+    var messagesize = await provider.doc('prov_').get().then((snapshot) => snapshot.get('time'));
+    return messagesize;
+  }
   void initState() {
     // TODO: implement initState
     messagestream();
@@ -148,7 +155,8 @@ class _uiState extends State<ui> {
                     itemBuilder: (context, index) {
                       return InkWell(
                           onTap:(){
-                            Get.to(()=>chat(s_list[index],s_list[index].toString()));
+                            Get.to(()=>ChatScreen(s_list[index],s_list[index].toString()));
+                            // Get.to(()=>chat(s_list[index],s_list[index].toString()));
                           },
                           child: ListTile(title:Text(s_list[index].toString()),));
                     },),
@@ -158,9 +166,11 @@ class _uiState extends State<ui> {
               itemBuilder: (context, index) {
                 final doc = snapshot.data!.docs[index];
                 return Container(color: Colors.yellow,margin: EdgeInsets.all(10),padding: EdgeInsets.all(10),
-                    child: InkWell(onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => chat(doc.id,doc.id.toString()),));
-                    print(snapshot.data!.docs[index].id);
+                    child: InkWell(onTap: () async{
+                      Get.to(()=>ChatScreen(doc.id,doc.id.toString()));
+                      // Get.to(()=>ChatScreen());
+                    // Navigator.of(context).push(MaterialPageRoute(builder: (context) => chat(doc.id,doc.id.toString()),));
+                    // print(snapshot.data!.docs[index].id);
                     },
                         child: Text("${doc.id}",style: TextStyle(fontSize: 22),)));
               },

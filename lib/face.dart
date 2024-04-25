@@ -30,7 +30,7 @@ List img=["images/5.jpeg","images/1.jpeg","images/4.jpeg","images/2.jpeg","image
                   // print(w);
                   print(FirebaseAuth.instance.currentUser?.email);
                   print(FirebaseAuth.instance.currentUser?.uid);
-                  Get.to(()=> ChatScreen());
+                  // Get.to(()=> ChatScreen());
                 }, icon:Icon(Icons.search,color: Colors.black,) ,)
                ),Padding(padding: EdgeInsets.all(2)),
             CircleAvatar(backgroundColor: Colors.white54,
@@ -56,7 +56,7 @@ List img=["images/5.jpeg","images/1.jpeg","images/4.jpeg","images/2.jpeg","image
                   padding: const EdgeInsets.only(top: 8),
                   child: InkWell(onTap: (){
                     FirebaseAuth.instance.signOut();
-                    // Get.to(()=>MyHomePage(title: "title"));
+                    Get.to(()=>MyHomePage(title: "title"));
                   },child: Column(children: [Icon(Icons.home),Text("Home",style: TextStyle(fontSize: 11),)]),),
                 ),Padding(
                   padding: const EdgeInsets.only(top: 8),
