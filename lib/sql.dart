@@ -14,12 +14,20 @@ class SQLDB{
   initialdb()async{
     // sqfliteFfiInit();
     var database=await getDatabasesPath();
-    path=join(database,"chatbot.db");
-    var mydb=await openDatabase(path,onCreate: create,version:1,onUpgrade: upgrade);
+    // path=join(database,"chatbot.db");
+    path=join(database,"check.db");
+    var mydb=await openDatabase(path,onCreate: create,version:2,onUpgrade: upgrade);
     print("database created");
     return mydb;
   }
   upgrade(Database db,int oldversion,int newversion)async{
+    await db.execute('''
+     CREATE TABLE 'checklist'(
+     'exsit' BOOLEAN
+      )
+     ''');
+    // inserttable();
+    print("CREATE WAS DONE");
     print("------------ upgrade -----------");
   }
   create(Database db,int version)async{
@@ -34,12 +42,15 @@ class SQLDB{
     print("CREATE WAS DONE");
 
   }
-  insert(String content,var time,String role)async{
+  insert(var content)async{
     Database? mydb=await db;
-    var res= await mydb?.insert('chatbot', {
-      "content":content,
-      'time':time,
-      'role':role,
+    // var res= await mydb?.insert('chatbot', {
+    //   "content":content,
+    //   'time':time,
+    //   'role':role,
+    // });
+    var res= await mydb?.insert('checklist', {
+      "exist":content,
     });
     print("inserted WAS DONE");
     return res;
@@ -71,13 +82,13 @@ class SQLDB{
     return res;
   }selectstored()async{
     Database? mydb=await db;
-    var res= await mydb?.rawQuery("SELECT stored FROM chatbot");
+    var res= await mydb?.rawQuery("SELECT exsit FROM checklist");
     print("seleced WAS DONE");
     return res;
   }
-  update(var value,var mywhere)async{
+  update(var value)async{
     Database? mydb=await db;
-    var res= await mydb?.update('chatbot',value,where:mywhere );
+    var res= await mydb?.update('checklist',value );
     // var res= await mydb?.rawUpdate(sql);
     print("updated WAS DONE");
     return res;

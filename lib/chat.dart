@@ -1,16 +1,12 @@
 import 'package:example/bot.dart';
+import 'package:example/sql.dart';
 import 'package:example/ui.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:chatview/chatview.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:example/data.dart';
 import 'package:example/models/theme.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 
 class chat extends StatefulWidget {
   var doc,user;
@@ -48,42 +44,6 @@ class _chatState extends State<chat> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor:theme.backgroundColor,
-        appBar:AppBar(
-          elevation: theme.elevation,
-          backgroundColor: theme.appBarColor,
-          // profilePicture: Data.profileImage,
-          // backArrowColor: theme.backArrowColor,
-          title: Text("${widget.user}"),
-          titleTextStyle: TextStyle(
-            color: theme.appBarTitleTextStyle,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            letterSpacing: 0.25,
-          ),
-          // userStatus: "online",
-          // userStatusTextStyle: const TextStyle(color: Colors.grey),
-          actions: [
-            IconButton(
-              onPressed: _onThemeIconTap,
-              icon: Icon(
-                isDarkTheme
-                    ? Icons.brightness_4_outlined
-                    : Icons.dark_mode_outlined,
-                color: theme.themeIconColor,
-              ),
-            ),
-            IconButton(
-              tooltip: 'Toggle TypingIndicator',
-              onPressed: ()async{
-                // initState();
-              },
-              icon: Icon(
-                Icons.keyboard,
-                color: theme.themeIconColor,
-              ),
-            ),
-          ],
-        ),
         body: Column(
           children: [
             Expanded(

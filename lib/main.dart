@@ -296,6 +296,8 @@
 
 import 'package:example/face.dart';
 import 'package:example/ui.dart';
+import 'package:example/auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
@@ -314,6 +316,11 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+  await FirebaseMessaging.instance.setAutoInitEnabled(true);
+  print("FCMToken $fcmToken");
+  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler); // If needed
+  // FirebaseAnalytics analytics = FirebaseAnalytics();
   runApp(const MyApp());
 }
 
@@ -332,19 +339,19 @@ class MyApp extends StatelessWidget {
       //"signin":(context)=>signin(),
       "home":(context)=>home(sendto: "sendto",sendto2: "sendto2"),
      // "chat":(context)=>chat(sendto:"sendto",message: "message",Id: "id",),
-      "MyHomePage":(context)=>MyHomePage(title: '',),
+     //  "MyHomePage":(context)=>MyHomePage(title: '',),
       "face":(context) => face()
     },
       // home: chat(sendto: "sendto", message:" message", Id: "Id"),
-      // home: FirebaseAuth.instance.currentUser?.email.toString()=='null'?face():MyHomePage(title: 'Flutter Demo Home Page') ,
-      home:ui("${FirebaseAuth.instance.currentUser?.uid}"),
+      home: MyHomePage() ,
+      // home:ui("${FirebaseAuth.instance.currentUser?.uid}"),
+      // home: auth_p(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -368,93 +375,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   @override
   Widget build(BuildContext context) {
-
-    return Scaffold(resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-      ),
-        // Here we take the value fr
-      body:
-      Center(
-          child:Column(
-            //mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(margin:EdgeInsets.all(10),child:
-              Text("welcome babe to my app ",style:TextStyle(fontSize: 30,fontWeight: FontWeight.bold),)),
-
-
-              Container( margin:EdgeInsets.all(30),child:
-              Text("Sign in ",style:TextStyle(fontSize: 30,fontWeight: FontWeight.bold),)),
-
-              Container( alignment: Alignment.centerLeft,margin: EdgeInsets.only(left: 10,),
-                  child: Text("Email",style:TextStyle(fontSize: 20),)),
-
-
-              Container( margin: EdgeInsets.all(8),
-                  child: TextFormField(onChanged: (value) => email=value,cursorColor: Colors.indigo,
-                      decoration:InputDecoration(border: OutlineInputBorder(borderRadius:BorderRadius.circular(20)),
-                        hintText: "Enter your email",
-                      ))),
-
-              Container( alignment: Alignment.centerLeft,margin: EdgeInsets.only(left: 10,),
-                  child: Text("Password",style:TextStyle(fontSize: 20),)),
-
-
-              Container( margin: EdgeInsets.all(8),
-                  child: TextFormField(onChanged: (value) => pass=value,cursorColor: Colors.indigo,obscureText:showpass,
-                      decoration:InputDecoration(suffixIcon: IconButton(onPressed: () async{
-
-                        //                   var x= await Firebase.app().options;
-                        //                   var c=await FirebaseFirestore.instance.collection("chats");
-                        //                   try{
-                        //                      await c.snapshots().listen((value) {
-                        //               value.docs.forEach((element) {
-                        //                   print("-------------");
-                        //                            print(element.data());
-                        // });
-                        //
-                        // });
-                        // }catch(e){print("ERORRRRR:$e");}
-                        //                 //  print(x);
-                        //                   setState(() {
-                        //                   showpass=false;});
-
-                      }, icon:Icon(Icons.password)),border: OutlineInputBorder(borderRadius:BorderRadius.circular(20)),
-                        hintText: "Enter your Password",
-                      ))),
-
-              ElevatedButton(onPressed:() async {
-               var user=await auth.signInWithEmailAndPassword(email: email, password: pass);
-                try {
-                  final credential = await auth.signInWithEmailAndPassword(email: email, password: pass);
-                } on FirebaseAuthException catch (e) {
-                  if (e.code == 'user-not-found') {
-                    print('No user found for that email.');
-                  } else if (e.code == 'wrong-password') {
-                    print('Wrong password provided for that user.');
-                    }}
-                  print("-------------");
-                print("email: "+"$email");
-                print("pass: "+"$pass");
-                if(user!=null){
-                  Navigator.of(context).pushNamed("face");
-                }
-                else{
-                  Get.snackbar("Erorr","Please fill out this fields",backgroundColor: Colors.red,colorText: Colors.white);
-                }
-              }
-                  ,child:Text("Sign in")
-                  ),
-              Row( mainAxisAlignment:MainAxisAlignment.center,children: [Text("Don't have an account?"),
-                TextButton(onPressed: ()async {
-                  print("u dont have acc");
-                   Navigator.of(context).pushNamed("signup");
-                },
-                    child: Text("Sign up",style:TextStyle(fontWeight: FontWeight.bold),))],),
-
-            ],
-          )
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    return StreamBuilder(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return ui({"${FirebaseAuth.instance.currentUser!.uid}"});
+        } else
+          return auth_p();
+      },
     );
   }
 }

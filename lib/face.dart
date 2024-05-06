@@ -11,7 +11,7 @@ import 'package:get/get.dart';
 
 import 'bot.dart';
 import 'home.dart';
-import 'package:http/http.dart' as http;
+// import 'package:http/http.dart' as http;
 import 'dart:convert';
 class face extends StatelessWidget{
 List img=["images/5.jpeg","images/1.jpeg","images/4.jpeg","images/2.jpeg","images/3.jpeg","images/1.jpeg","images/6.jpeg"];
@@ -56,7 +56,7 @@ List img=["images/5.jpeg","images/1.jpeg","images/4.jpeg","images/2.jpeg","image
                   padding: const EdgeInsets.only(top: 8),
                   child: InkWell(onTap: (){
                     FirebaseAuth.instance.signOut();
-                    Get.to(()=>MyHomePage(title: "title"));
+                    // Get.to(()=>MyHomePage(title: "title"));
                   },child: Column(children: [Icon(Icons.home),Text("Home",style: TextStyle(fontSize: 11),)]),),
                 ),Padding(
                   padding: const EdgeInsets.only(top: 8),

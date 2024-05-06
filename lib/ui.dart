@@ -1,9 +1,11 @@
 import 'package:example/bot.dart';
 import 'package:example/links.dart';
+import 'package:example/login.dart';
 import 'package:example/ne.dart';
 import 'package:example/chat.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -64,58 +66,50 @@ class _uiState extends State<ui> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton:  FloatingActionButton(onPressed: ()async{
-      return await showDialog(context: context, builder:(context) {
-        return AlertDialog(
-          shape:UnderlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-          title: Text("New Message",textAlign: TextAlign.center,style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
-          actions: [
-            TextFormField( controller: _sendto,
-              decoration: InputDecoration( hintText:"Send message to..",focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.blue, width: 3)),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    gapPadding: 10,
-                    borderSide: BorderSide(color: Colors.grey)),),),
-
-
-            Padding(padding: EdgeInsetsDirectional.all(5)),
-
-
-            TextFormField( controller: _message,
-              decoration: InputDecoration( hintText:"The Message..",focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.blue, width: 3)),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    gapPadding: 10,
-                    borderSide: BorderSide(color: Colors.grey)),),),
-            Row( mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Container( margin:EdgeInsetsDirectional.only(top: 10,end: 5),child: ElevatedButton(
-                    onPressed: (){
-                      Navigator.pop(context);
-                    },
-                    child:Text("Cancel",textAlign: TextAlign.center,style: TextStyle(fontSize: 20),))),
-
-                Container( margin:EdgeInsetsDirectional.only(top: 10,end: 5),child: ElevatedButton(
-                    onPressed: () async{
-                      // await user.doc(_sendto.text).set({"time": FieldValue.serverTimestamp()});
-                      // await user.doc(_sendto.text).collection("mess").doc().set({
-                      //   "sendby":auth.currentUser?.email,
-                      //   "text":_message.text,
-                      //   "time": FieldValue.serverTimestamp(),
-                      // });
-                    },
-                    child:Text("Done",textAlign: TextAlign.center,style: TextStyle(fontSize: 20),))),
-              ],)],
-        );
-      },);
-
-    },
+        // Get the device token
+        //  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+       // await FirebaseMessaging.instance.getToken()
+         print(await FirebaseMessaging.instance.getToken());
+         print(await auth.currentUser!.email);
+        //  Future<String?> getDeviceToken() async {
+        //   // Request permission for receiving notifications (iOS only)
+        //   await _firebaseMessaging.requestPermission();
+        //
+        //   // Get the device token
+        //   String? token = await _firebaseMessaging.getToken();
+        //
+        //   return token;
+        // }
+        //     print(await getDeviceToken());
+//          void setupFirebaseMessaging() {
+//            FirebaseMessaging messaging = FirebaseMessaging.instance;
+//
+//            // Handle foreground messages
+//            FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+//              print("Foreground message received: ${message.notification?.title}");
+//            });
+//
+//            // Handle background messages
+//            FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+//              print("Background message received: ${message.notification?.title}");
+//            });
+//
+//            // Initialize background message handler (optional)
+//            FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+//          }
+//
+// // Background message handler
+//         Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+//           print("Handling a background message: ${message.notification?.title}");
+//         }
+      },
     child: Icon(Icons.add,size:35,)),
       appBar: AppBar(
         backgroundColor: Colors.green,centerTitle: true,
+       leading: IconButton(onPressed: ()async{
+         await FirebaseAuth.instance.signOut();
+         Get.to(()=>login());
+       }, icon:Icon(Icons.logout)),
        title: Text("Chats",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white,fontSize:25),),
        actions: [
          IconButton(onPressed: (){

@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:chatview/chatview.dart';
 import 'package:example/data.dart';
 import 'package:example/models/theme.dart';
+import 'package:get/get.dart';
 var _chatController;
 class ChatScreen extends StatefulWidget {
   var doc,user;
@@ -18,13 +19,25 @@ class ChatScreen extends StatefulWidget {
 
 AppTheme theme = LightTheme();
 bool isDarkTheme = false;
-
 var auth=FirebaseAuth.instance;
 final currentUser = ChatUser(
   id: '${auth.currentUser?.uid}',
   name: '${auth.currentUser?.displayName}',
   profilePhoto: Data.profileImage,
 );
+bool isMessageExists(Message messageToFind, List<Message> messageList) {
+  // Iterate through the list
+  for (Message message in messageList) {
+    // Compare each message with the message to find
+    if (message.id == messageToFind.id &&
+        message.message == messageToFind.message &&
+        message.createdAt == messageToFind.createdAt &&
+        message.sendBy == messageToFind.sendBy) {
+      return true;
+    }
+  }
+  return false;
+}
 Future<bool> doesDocumentExist(String documentPath) async {
   try {
     DocumentReference docRef = FirebaseFirestore.instance.doc(documentPath);
@@ -35,13 +48,46 @@ Future<bool> doesDocumentExist(String documentPath) async {
     return false; // Return false in case of error
   }
 }
-
+var check;
+late StreamController<List<Message>> _messageStreamController;
 class _chatState extends State<ChatScreen> {
   @override
-  late StreamController<List<Message>> _messageStreamController;
+  Future<void> getCHECKFromDocument() async {
+    var docSnapshot = await FirebaseFirestore.instance
+        .collection("accounts")
+        .doc("${auth.currentUser?.email}")
+        .collection("mess")
+        .doc(widget.user)
+        .get();
+    if (docSnapshot.exists) {
+      // Access the data from the document
+      var data = docSnapshot.data();
+      if (data!.containsKey('firstmessage')) {
+        check = data['firstmessage'];
+      } else {
+        print("Time field does not exist in the document.");
+      }
+    } else {
+      print("Document does not exist.");
+    }
+  }
+  Future<void> updateCHECKInDocument(var b) async {
+    // Get a reference to the document
+    var documentReference = FirebaseFirestore.instance
+        .collection("accounts")
+        .doc("${auth.currentUser?.email}")
+        .collection("mess")
+        .doc(widget.user);
+    getCHECKFromDocument();
+    await documentReference.update({'firstmessage':b});
+    await getCHECKFromDocument();
+  }
+
   void initState() {
     _messageStreamController = StreamController<List<Message>>();
     _messageStreamController.addStream(getMessageStream());
+     getCHECKFromDocument();
+    print("start");
     super.initState();
   }
   // List<Message> messages=[];
@@ -51,7 +97,7 @@ class _chatState extends State<ChatScreen> {
         .doc("${auth.currentUser?.email}")
         .collection("mess")
         .doc(widget.user)
-        .collection("chat").orderBy("Time")
+        .collection("chat").orderBy('Time', descending: true)
         .snapshots()
         .map((snapshot) {
       List<Message>messages = [];
@@ -78,6 +124,7 @@ class _chatState extends State<ChatScreen> {
 
   List<Message> messageList=[];
   List<Message> messageLength=[];
+  List<Message> messagefl=[];
   // var message_length=0;
 
   @override
@@ -97,57 +144,107 @@ class _chatState extends State<ChatScreen> {
         body:StreamBuilder(
             stream:_messageStreamController.stream,
             builder: (context, snapshot){
+              getCHECKFromDocument();
                 if (snapshot.connectionState == ConnectionState.waiting) {
                  return Center( child: CircularProgressIndicator(),);
                 } else if (snapshot.hasError) {
                   return Center(
                     child: Text('Error: ${snapshot.error}'),);
                 } else {
-                  if(snapshot.data!.length==0){
+                  getCHECKFromDocument();
+                  if (snapshot.data!.length == 0) {
+                    messageList = snapshot.data!;
+                    messagefl=messageList;
+                    print("objecT---${messageList.length}");
+                    messageLength.isEmpty ? messageLength = messageList : null;
+                    updateCHECKInDocument(true);
+                    print("objecT---${messageLength.length}");
+                    return ChatViewWidget(
+                        currentUser: currentUser,
+                        messageList: snapshot.data ?? [],
+                        chatController: _chatController,
+                        user: widget.user
+                    );
+                  }else{
+                  messageList = snapshot.data!;
+                  // messageList.sort((a, b) =>a.createdAt.compareTo(b.createdAt));
+                  messageLength.isEmpty ? messageLength = messageList : null;
+                  // messageLength.sort((a, b) =>a.createdAt.compareTo(b.createdAt));
+                  print("dddddddddddddddddd${snapshot.data!.last.message}");
+                  print("dddddddddddddddddd////////$check");
+                  print("dddddddddddddddddd");
+                  messageLength.toSet().toList();
+                  _chatController.initialMessageList =messageLength.toSet().toList();
+                  print("dddddddddddddddddd${messageList.last.createdAt}///${messageList.last.message}");
+                  print("dddddddddddddddddd${messageLength.last.createdAt}///${messageLength.last.message}");
+                  // print("${messageList.indexOf(Message(
+                  //     message: messageLength.first.message,
+                  //     createdAt: messageLength.last.createdAt,
+                  //     sendBy: messageLength.last.sendBy))}");
+                  if (messageLength!= messageList) {
+                    if (messageLength.isNotEmpty) {
+                      // Future<bool> _checkMessagesExist(List<Message> messageList) async {
+                        for (final message in messageList) {
+                          if (!isMessageExists(message, messageLength)) {
+                            _chatController.addMessage(message);
+                              // Message(
+                              //     id: "${messageList.last.id}",
+                              //     createdAt: DateTime.now(),
+                              //     message: messageList.last.message,
+                              //     sendBy: messageList.last.sendBy
+                              // ),);
+                            messageLength = messageList;print("message added1");
+                          }
+                        }print("don't Added");
+                        // return true;
+                      // }
+                      // if (isMessageExists(messageList.last, messageLength)) {
+                      //   print("11***11");
+                      //
+                      //
+                      // } else {
+                      //
+                      // }
+                    }
+                    print("not exisit");
+                  }
+                  else {
+                    if(messageList.first==messageList.last){
+                        print(messageLength.first.message);
+                        print(messageList.first.message);
+                        print("---${messageLength.length}");
+                        print("---${messageList.length}");
+                        print(isMessageExists(messageLength.last, messageList));
+                        // print("---${messageLength.length}");
+                        // print(messageLength.contains(messageList.first.message));
+                        //   if(messageLength.length==1){
+                            if(check.toString()=='null'||check.toString()=='true'){
+                              // messageList.removeLast();
+                              if(isMessageExists(messageList.last, messageLength)){
+                              print("---${messageList.length}");
+                              _chatController.addMessage(
+                              Message(
+                                  id: "${messageList.last.id}",
+                                  createdAt: DateTime.now(),
+                                  message:messageList.last.message,
+                                  sendBy: messageList.last.sendBy
+                              ),);
+                              _chatController.removeMessage(messageLength.last);
+                              // messageLength=messageList;
+                              updateCHECKInDocument(false);
+                            print("message added2");
+                          }else{print("don't Added");}}
+                        print("message added3");
+                    } else print("lists equall");}
+
                   return ChatViewWidget(
                     currentUser: currentUser,
                     messageList: snapshot.data ?? [],
                     chatController: _chatController,
-                    user: widget.user
-                  );}
-              messageList= snapshot.data!;
-              messageLength.isEmpty?messageLength=messageList:null;
-              messageLength.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-              messageList.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-              print("dddddddddddddddddd${snapshot.data!.last.message}");
-              print("dddddddddddddddddd");
-              print("dddddddddddddddddd");
-              messageLength.toSet().toList();
-              _chatController.initialMessageList = messageLength.toSet().toList();
-              print("dddddddddddddddddd${messageList.last.createdAt}///${messageList.last.message}");
-              print("dddddddddddddddddd${messageLength.last.createdAt}///${messageList.last.message}");
-
-              if(messageLength.last.createdAt!=messageList.last.createdAt){
-                if(messageLength.isNotEmpty){
-                  if(!messageLength.contains(messageList.last.createdAt)){
-                    _chatController.addMessage(
-                    Message(
-                        id: "${messageList.last.id}",
-                        createdAt: DateTime.now(),
-                        message:messageList.last.message,
-                        sendBy: messageList.last.sendBy
-                      // replyMessage: replyMessage,
-                      // messageType: messageType,
-                    ),);
-                  messageLength=messageList;
-                }else{print("don't Added");}
+                    user: widget.user,
+                    getmessage: getMessageStream(),
+                  );
                 }
-                print("not exisit");
-              }
-              else{
-                print("exsist");
-              }
-              return ChatViewWidget(
-                currentUser: currentUser,
-                messageList: snapshot.data ?? [],
-                chatController: _chatController,
-                user: widget.user,
-              );
             }}
         )
     );
@@ -169,13 +266,15 @@ class ChatViewWidget extends StatefulWidget {
   final List<Message> messageList;
   final ChatController chatController;
   final String user;
+  var getmessage;
 
-  const ChatViewWidget({
+   ChatViewWidget({
     Key? key,
     required this.currentUser,
     required this.messageList,
     required this.chatController,
     required this.user,
+     this.getmessage,
   }) : super(key: key);
 
   @override
@@ -211,7 +310,7 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
         backGroundColor: theme.appBarColor,
         profilePicture: Data.profileImage,
         backArrowColor: theme.backArrowColor,
-        chatTitle: "${widget.user}",
+        chatTitle: "${widget.user.replaceAll("@gmail.com", '')}",
         chatTitleTextStyle: TextStyle(
           color: theme.appBarTitleTextStyle,
           fontWeight: FontWeight.bold,
@@ -313,6 +412,7 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
       replyPopupConfig: ReplyPopupConfiguration(
         onUnsendTap:(Message)async{
           // await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).collection("chat")
+          print(check.toString());
           showDialog(context: context, builder:(context) {
             return AlertDialog(
                 shape:UnderlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
@@ -335,6 +435,7 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
                           Container( margin:EdgeInsetsDirectional.only(top: 10,end: 5),child: ElevatedButton(
                               onPressed: () async{
                                 widget.chatController.removeMessage(Message);
+                                // _messageStreamController.addStream(widget.getmessage);
                                 Navigator.of(context).pop();
                                 int index = widget.messageList.indexWhere((obj) => obj.createdAt.toString()== '${Message.createdAt}');
                                 QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -363,7 +464,7 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
                                collection("mess").
                                doc("${auth.currentUser?.email}")
                                .collection("chat").doc(lastDocument2.id).delete());
-                               //  Navigator.of(context).pop();
+                               //  Navigator.of(context).p op();
 
                               },
                               child:Text("Delete",textAlign: TextAlign.center,style: TextStyle(fontSize: 20),))),
@@ -462,14 +563,14 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
       ReplyMessage replyMessage,
       MessageType messageType,
       ) async{
-    print("****************$MessageType");
-    print("/////////////$replyMessage");
+    // print("****************$MessageType");
+    // print("/////////////$replyMessage");
     String documentPath = 'accounts/${auth.currentUser?.email}/mess/${widget.user}';
     bool exists = await doesDocumentExist(documentPath);
     String documentPath2 = 'accounts/${widget.user}/mess/${auth.currentUser?.email}';
     bool exists2 = await doesDocumentExist(documentPath2);
-    !exists?await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).set({"time": DateTime.now()}):null;
-    !exists2?await FirebaseFirestore.instance.collection("accounts").doc("${widget.user}").collection("mess").doc("${auth.currentUser?.email}").set({"time": DateTime.now()}):null;
+    !exists?await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).set({"time": DateTime.now(),"firstmessage":true}):null;
+    !exists2?await FirebaseFirestore.instance.collection("accounts").doc("${widget.user}").collection("mess").doc("${auth.currentUser?.email}").set({"time": DateTime.now(),"firstmessage":true}):null;
     print('Document exists: $exists');
     await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).collection("chat")
         .add({
@@ -489,7 +590,7 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
       "sendby": auth.currentUser?.email,
       "Time": DateTime.now()
     }).then((value) {
-      print("doneeeeee");
+      print("doneeeeee${DateTime.now()}");
     });
     Future.delayed(const Duration(milliseconds: 300), () {
       _chatController.initialMessageList.last.setStatus =
