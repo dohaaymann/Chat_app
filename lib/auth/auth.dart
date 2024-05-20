@@ -1,10 +1,8 @@
 import 'dart:ui';
-
-import 'package:example/sign.dart';
-import 'package:example/signup.dart';
+import 'package:example/auth/signup.dart';
 import 'package:flutter/material.dart';
 
-import 'Constant/colors.dart';
+import '../Constant/colors.dart';
 import 'login.dart';
 
 class auth_p extends StatefulWidget {
@@ -22,14 +20,14 @@ class _authState extends State<auth_p> {
       child: Scaffold(resizeToAvoidBottomInset: false,backgroundColor:Color(0xff291135),
           body:
           Container(
-            decoration:BoxDecoration(
+            decoration:const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage("image/back/backg.jpg"),colorFilter: ColorFilter.mode(Colors.black87,BlendMode.darken),
                 fit: BoxFit.cover,
               ),
             ),
             child: Container(
-              margin: EdgeInsets.only(left:10, right:10),
+              margin: const EdgeInsets.only(left:10, right:10),
               child:
               BackdropFilter(filter: ImageFilter.blur(sigmaX:2.0,sigmaY:2.0 ),child:
               Column(
@@ -39,10 +37,10 @@ class _authState extends State<auth_p> {
                     child: Column(mainAxisAlignment: MainAxisAlignment.end,
                       children: [ Row(mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          login_or_signup?Text(
+                          login_or_signup?const Text(
                             "Don't have an account?..Switch",
                             style: TextStyle(fontSize:18,color: Colors.white),
-                          ):Text(
+                          ):const Text(
                             "Already have an account?..Switch",
                             style: TextStyle(fontSize:18,color: Colors.white),
                           ),
@@ -60,8 +58,8 @@ class _authState extends State<auth_p> {
                                   });
                                 },
                                   child: Container(alignment:Alignment.center  ,
-                                      decoration:ShapeDecoration(shape: StadiumBorder(),color:login_or_signup? Colors.yellow:accentPurpleColor),
-                                      child: Text("Login",style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold),)),
+                                      decoration:ShapeDecoration(shape: StadiumBorder(),color:login_or_signup? pinkyy:accentPurpleColor),
+                                      child: Text("Login",style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold,color: Colors.white),)),
                                 ),
                               ), Expanded(
                                 child: InkWell(onTap: (){
@@ -70,8 +68,8 @@ class _authState extends State<auth_p> {
                                   });
                                 },
                                   child: Container(alignment:Alignment.center,
-                                      decoration:ShapeDecoration(shape: StadiumBorder(),color:!login_or_signup? Colors.yellow:accentPurpleColor),
-                                      child: Text("Signup",style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold),)),
+                                      decoration:ShapeDecoration(shape: StadiumBorder(),color:!login_or_signup? pinkyy:accentPurpleColor),
+                                      child: Text("Signup",style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold,color: Colors.white),)),
                                 ),
                               ),
                             ],

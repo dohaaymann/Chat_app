@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:example/chat.dart';
-import 'package:example/signup.dart';
+import 'package:example/homescreen.dart';
+import 'package:example/auth/signup.dart';
 
 class home extends StatelessWidget {
   @override

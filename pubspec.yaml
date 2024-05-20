@@ -28,6 +28,9 @@ dependencies:
   chatview:
     path: ../
   firebase_messaging: ^14.9.1
+  flutter_custom_clippers: ^2.1.0
+  firebase_storage: ^11.7.5
+  firebase_app_check: ^0.2.2+5
 #  firebase_messaging: ^14.9.1
 #  firebase_analytics: ^10.10.4
 
@@ -45,3 +48,5 @@ flutter:
     - image/3.jpg
     - image/back/4.jpg
     - image/back/backg.jpg
+    - image/unkown.png
+    - image/

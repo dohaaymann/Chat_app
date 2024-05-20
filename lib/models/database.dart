@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'links.dart';
+import '../links.dart';
 
 // String _basicAuth = 'Basic ' +
 //     base64Encode(utf8.encode(

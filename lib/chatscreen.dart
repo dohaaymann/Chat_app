@@ -17,7 +17,7 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _chatState();
 }
 
-AppTheme theme = LightTheme();
+AppTheme theme = DarkTheme();
 bool isDarkTheme = false;
 var auth=FirebaseAuth.instance;
 final currentUser = ChatUser(
@@ -96,8 +96,8 @@ class _chatState extends State<ChatScreen> {
         .collection("accounts")
         .doc("${auth.currentUser?.email}")
         .collection("mess")
-        .doc(widget.user)
-        .collection("chat").orderBy('Time', descending: true)
+        .doc(widget.user)  
+        .collection("chat").orderBy('Time',descending: false)
         .snapshots()
         .map((snapshot) {
       List<Message>messages = [];
@@ -155,10 +155,8 @@ class _chatState extends State<ChatScreen> {
                   if (snapshot.data!.length == 0) {
                     messageList = snapshot.data!;
                     messagefl=messageList;
-                    print("objecT---${messageList.length}");
                     messageLength.isEmpty ? messageLength = messageList : null;
                     updateCHECKInDocument(true);
-                    print("objecT---${messageLength.length}");
                     return ChatViewWidget(
                         currentUser: currentUser,
                         messageList: snapshot.data ?? [],
@@ -167,61 +165,24 @@ class _chatState extends State<ChatScreen> {
                     );
                   }else{
                   messageList = snapshot.data!;
-                  // messageList.sort((a, b) =>a.createdAt.compareTo(b.createdAt));
                   messageLength.isEmpty ? messageLength = messageList : null;
-                  // messageLength.sort((a, b) =>a.createdAt.compareTo(b.createdAt));
-                  print("dddddddddddddddddd${snapshot.data!.last.message}");
-                  print("dddddddddddddddddd////////$check");
-                  print("dddddddddddddddddd");
                   messageLength.toSet().toList();
                   _chatController.initialMessageList =messageLength.toSet().toList();
-                  print("dddddddddddddddddd${messageList.last.createdAt}///${messageList.last.message}");
-                  print("dddddddddddddddddd${messageLength.last.createdAt}///${messageLength.last.message}");
-                  // print("${messageList.indexOf(Message(
-                  //     message: messageLength.first.message,
-                  //     createdAt: messageLength.last.createdAt,
-                  //     sendBy: messageLength.last.sendBy))}");
                   if (messageLength!= messageList) {
                     if (messageLength.isNotEmpty) {
-                      // Future<bool> _checkMessagesExist(List<Message> messageList) async {
                         for (final message in messageList) {
                           if (!isMessageExists(message, messageLength)) {
                             _chatController.addMessage(message);
-                              // Message(
-                              //     id: "${messageList.last.id}",
-                              //     createdAt: DateTime.now(),
-                              //     message: messageList.last.message,
-                              //     sendBy: messageList.last.sendBy
-                              // ),);
-                            messageLength = messageList;print("message added1");
+                            messageLength = messageList;
                           }
                         }print("don't Added");
-                        // return true;
-                      // }
-                      // if (isMessageExists(messageList.last, messageLength)) {
-                      //   print("11***11");
-                      //
-                      //
-                      // } else {
-                      //
-                      // }
                     }
                     print("not exisit");
                   }
                   else {
                     if(messageList.first==messageList.last){
-                        print(messageLength.first.message);
-                        print(messageList.first.message);
-                        print("---${messageLength.length}");
-                        print("---${messageList.length}");
-                        print(isMessageExists(messageLength.last, messageList));
-                        // print("---${messageLength.length}");
-                        // print(messageLength.contains(messageList.first.message));
-                        //   if(messageLength.length==1){
                             if(check.toString()=='null'||check.toString()=='true'){
-                              // messageList.removeLast();
                               if(isMessageExists(messageList.last, messageLength)){
-                              print("---${messageList.length}");
                               _chatController.addMessage(
                               Message(
                                   id: "${messageList.last.id}",
@@ -248,17 +209,6 @@ class _chatState extends State<ChatScreen> {
             }}
         )
     );
-  }
-    void _onThemeIconTap() {
-    setState(() {
-      if (isDarkTheme) {
-        theme = LightTheme();
-        isDarkTheme = false;
-      } else {
-        theme = DarkTheme();
-        isDarkTheme = true;
-      }
-    });
   }
 }
 class ChatViewWidget extends StatefulWidget {
@@ -415,9 +365,9 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
           print(check.toString());
           showDialog(context: context, builder:(context) {
             return AlertDialog(
-                shape:UnderlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+                shape:const UnderlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                 //OutlineInputBorder(borderRadius: BorderRadius.circular(20)),
-                title: Text("Delete Message ?",textAlign: TextAlign.center,style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
+                title: const Text("Delete Message ?",textAlign: TextAlign.center,style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),),
                 actions:[
                   Column(
                     children:[
@@ -447,8 +397,8 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
                                     doc("${auth.currentUser?.email}").collection("chat")
                                     .orderBy("Time")
                                     .get();
-                                  print(querySnapshot.docs[index].get("text"));
-                                  print(querySnapshot2.docs[index].get("text"));
+                                  // print(querySnapshot.docs[index].get("text"));
+                                  // print(querySnapshot2.docs[index].get("text"));
                                   DocumentSnapshot lastDocument = querySnapshot.docs[index];
                                   DocumentSnapshot lastDocument2 = querySnapshot2.docs[index];
 

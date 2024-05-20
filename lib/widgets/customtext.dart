@@ -1,3 +1,4 @@
+import 'package:example/Constant/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -30,8 +31,8 @@ class _customtextState extends State<customtext> {
         borderSide: BorderSide(
         width: 2, color: Colors.white),),
     suffixIcon: widget.hinttext == 'Password' ? IconButton(icon: !obscure
-            ? Icon(Icons.remove_red_eye, color: Colors.yellow,)
-            :FaIcon(CupertinoIcons.eye_slash,color: Colors.yellow),
+            ? Icon(Icons.remove_red_eye, color:pinkyy)
+            :FaIcon(CupertinoIcons.eye_slash,color:pinkyy),
           onPressed: () {
             setState(() {
               obscure = !obscure;

@@ -1,15 +1,15 @@
-import 'package:example/database.dart';
+import 'package:example/models/database.dart';
 import 'package:example/links.dart';
-import 'package:example/chat.dart';
+import 'package:example/homescreen.dart';
 import 'package:example/main.dart';
-import 'package:example/signup.dart';
-import 'package:example/ui.dart';
+import 'package:example/auth/signup.dart';
+import 'package:example/messages.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
-import 'bot.dart';
+import 'chatscreen.dart';
 import 'home.dart';
 // import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -36,7 +36,7 @@ List img=["images/5.jpeg","images/1.jpeg","images/4.jpeg","images/2.jpeg","image
             CircleAvatar(backgroundColor: Colors.white54,
                 child:IconButton(onPressed: (){
                  // Navigator.of(context).push(MaterialPageRoute(builder: (context) => home(sendto:"doha",sendto2:"dohaa"),));
-                 Navigator.of(context).push(MaterialPageRoute(builder: (context) =>ui("${auth.currentUser?.uid}"),));
+                 Navigator.of(context).push(MaterialPageRoute(builder: (context) =>messages("${auth.currentUser?.uid}"),));
                 }, icon:FaIcon(FontAwesomeIcons.facebookMessenger,color: Colors.blue,) ,)
             ),Padding(padding: EdgeInsets.all(4))
           ],elevation:0,scrolledUnderElevation:40,

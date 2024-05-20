@@ -294,9 +294,12 @@
 //
 
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:example/face.dart';
-import 'package:example/ui.dart';
-import 'package:example/auth.dart';
+import 'package:example/messages.dart';
+import 'package:example/auth/auth.dart';
+import 'package:example/models/theme.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -304,26 +307,38 @@ import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'dart:ui';
-
-import 'package:example/signup.dart';
-import 'package:example/chat.dart';
-//import 'package:cloud_firestore/cloud_firestore.dart';
-import 'firebase_options.dart';
-import 'home.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await FirebaseAppCheck.instance.activate(
+   androidProvider: AndroidProvider.playIntegrity, // required for web
+  );
+
   final fcmToken = await FirebaseMessaging.instance.getToken();
   await FirebaseMessaging.instance.setAutoInitEnabled(true);
   print("FCMToken $fcmToken");
-  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler); // If needed
-  // FirebaseAnalytics analytics = FirebaseAnalytics();
   runApp(const MyApp());
 }
+getdata()async{
+  var query = FirebaseFirestore.instance
+      .collection("accounts")
+      .doc("${auth.currentUser!.email}")
+      .collection("mess")
+      .doc("doha@gmail.com")
+      .collection("chat")
+      .orderBy('Time', descending: false)
+      .limitToLast(1);
 
+  var querySnapshot = await query.get();
+  if (querySnapshot.docs.isNotEmpty) {
+    var lastMessage = querySnapshot.docs.first;
+    print("Last document data: ${lastMessage.data()}");
+  } else {
+    print("No documents found.");
+  }
+}
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -332,20 +347,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Flutter Demo',debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),routes:{
-      "signup":(context)=>signup(),
-      //"signin":(context)=>signin(),
-      "home":(context)=>home(sendto: "sendto",sendto2: "sendto2"),
-     // "chat":(context)=>chat(sendto:"sendto",message: "message",Id: "id",),
-     //  "MyHomePage":(context)=>MyHomePage(title: '',),
-      "face":(context) => face()
-    },
-      // home: chat(sendto: "sendto", message:" message", Id: "Id"),
+      // theme: ThemeData.dark(),
       home: MyHomePage() ,
-      // home:ui("${FirebaseAuth.instance.currentUser?.uid}"),
-      // home: auth_p(),
     );
   }
 }
@@ -379,9 +382,9 @@ class _MyHomePageState extends State<MyHomePage> {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return ui({"${FirebaseAuth.instance.currentUser!.uid}"});
+          return messages({"${FirebaseAuth.instance.currentUser!.uid}"});
         } else
-          return auth_p();
+          return const auth_p();
       },
     );
   }
