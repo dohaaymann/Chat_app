@@ -1,246 +1,291 @@
-import 'package:example/models/database.dart';
-import 'package:example/links.dart';
-import 'package:example/homescreen.dart';
-import 'package:example/main.dart';
-import 'package:example/auth/signup.dart';
-import 'package:example/messages.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:chatview/chatview.dart';
+import 'package:example/data.dart';
+import 'package:example/models/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:get/get.dart';
 
-import 'chatscreen.dart';
-import 'home.dart';
-// import 'package:http/http.dart' as http;
-import 'dart:convert';
-class face extends StatelessWidget{
-List img=["images/5.jpeg","images/1.jpeg","images/4.jpeg","images/2.jpeg","images/3.jpeg","images/1.jpeg","images/6.jpeg"];
+
+class ch extends StatefulWidget {
+  const ch({Key? key}) : super(key: key);
+
   @override
-  var auth=FirebaseAuth.instance;
-  Widget build(BuildContext context) {
-    return
-      Scaffold(resizeToAvoidBottomInset: true,
-        appBar: AppBar(backgroundColor: Colors.white,automaticallyImplyLeading: false,
-          title: Text("Facebook",style: TextStyle(fontSize: 30,color: Colors.blue,fontWeight: FontWeight.bold)),
-          actions: [
-            CircleAvatar(backgroundColor:Colors.white54,
-                child:IconButton(onPressed: ()async{
-                  // var db=database();
-                  // var w=await db.postRequest(chatbot);
-                  // print(w);
-                  print(FirebaseAuth.instance.currentUser?.email);
-                  print(FirebaseAuth.instance.currentUser?.uid);
-                  // Get.to(()=> ChatScreen());
-                }, icon:Icon(Icons.search,color: Colors.black,) ,)
-               ),Padding(padding: EdgeInsets.all(2)),
-            CircleAvatar(backgroundColor: Colors.white54,
-                child:IconButton(onPressed: (){
-                 // Navigator.of(context).push(MaterialPageRoute(builder: (context) => home(sendto:"doha",sendto2:"dohaa"),));
-                 Navigator.of(context).push(MaterialPageRoute(builder: (context) =>messages("${auth.currentUser?.uid}"),));
-                }, icon:FaIcon(FontAwesomeIcons.facebookMessenger,color: Colors.blue,) ,)
-            ),Padding(padding: EdgeInsets.all(4))
-          ],elevation:0,scrolledUnderElevation:40,
-        ),
-        bottomNavigationBar: BottomAppBar(child:
-          Container(
-            height: 50,
-            width: double.maxFinite,
-            decoration: BoxDecoration(
-                color: Colors.white,
-            ),
-            child: Row(
-              // mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: InkWell(onTap: (){
-                    FirebaseAuth.instance.signOut();
-                    // Get.to(()=>MyHomePage(title: "title"));
-                  },child: Column(children: [Icon(Icons.home),Text("Home",style: TextStyle(fontSize: 11),)]),),
-                ),Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: InkWell(onTap: (){},child: Column(children: [Icon(Icons.group),Text("Friends",style: TextStyle(fontSize: 11),)]),),
-                ),Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: InkWell(onTap: (){},child: Column(children: [Icon(Icons.ondemand_video),Text("Video",style: TextStyle(fontSize: 11),)]),),
-                ),Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: InkWell(onTap: (){},child: Column(children: [Icon(Icons.groups_outlined),Text("Groups",style: TextStyle(fontSize: 11),)]),),
-                ),Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: InkWell(onTap: (){},child: Column(children: [Icon(Icons.notifications_rounded),Text("Notifications",style: TextStyle(fontSize: 11),)]),),
-                ),Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: InkWell(onTap: (){},child: Column(children: [Icon(Icons.menu),Text("Menu",style: TextStyle(fontSize: 11),)]),),
-                ),
-              ],
-            ),
-          ),),
-    body:Stack (
-      children:[ SingleChildScrollView(
-        child: Column(children: [
-          Container(color: Colors.white,padding: EdgeInsets.all(6),
-            child: Row(children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(50),
-                ),
-                child: CircleAvatar(
-                  radius: 25,
-                  backgroundImage:AssetImage("images/6.jpeg"),
-                ),
-              ),
-              SizedBox(width: 200,
-                child: GestureDetector(
-                  onTap: ()async{
-                    var db=database();
-                    // var w=await db.postRequest(linkw);
-                    // print(w);
-                  },
-                  child: TextFormField(
-                    // controller: p,
-                  ),
-                ),
-              ),
-              // Container(width:200,margin:EdgeInsets.only(left: 15,right:76),child:
-              // // Text("What's on your mind?",style: TextStyle(fontSize: 16),),
-              // ),
-              IconButton(onPressed: (){}, icon: Icon(Icons.add_photo_alternate,color: Colors.green,))
-            ],),
-          ),
-          Container(color:Colors.grey,height:4,child: Divider(color: Colors.grey,thickness:0.5,)),
-          Container(height: 200,margin: EdgeInsets.all(5),
-            child: GridView.builder(scrollDirection: Axis.horizontal,
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 200,
-                    childAspectRatio: 3 / 2,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10),
-                itemCount: img.length,
-                itemBuilder: (BuildContext ctx, i) {
-                  return Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(image: DecorationImage(
-                      image: AssetImage(img[i]),
-                      fit: BoxFit.cover,
-                    ),
-                        color: Colors.amber,
-                        borderRadius: BorderRadius.circular(10)),
-                    child: Container(height:200,decoration: BoxDecoration(borderRadius: BorderRadius.circular(50)),
-                        child:
-                        Column(crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(margin: EdgeInsets.all(5),
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(
-                                  color: Colors.blue,
-                                  width: 3.0,
-                                ),
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: CircleAvatar(
-                                radius: 25,
-                                backgroundImage:AssetImage("images/4.jpeg"),
-                              ),
-                            ),
-                            Padding(padding: EdgeInsets.only(top: 115,left:5,bottom:1),child:
-                            Align(alignment:Alignment.bottomLeft,child:Text("Dohaa ayman",style:
-                              TextStyle(color: Colors.white,fontSize:17),)),),
-                          ],
-                        )),
-                  );
-                }),
-          ),
-          Container(color:Colors.grey,height:4,child: Divider(color: Colors.grey,thickness:1,)),
-            Posts(),
-            Posts(),
-            Posts(),
+  State<ch> createState() => _chState();
+}
 
-
-        ],),
+class _chState extends State<ch> {
+  AppTheme theme = LightTheme();
+  bool isDarkTheme = false;
+  final currentUser = ChatUser(
+    id: '1',
+    name: 'Flutter',
+    profilePhoto: Data.profileImage,
+  );
+  final _chatController = ChatController(
+    initialMessageList: Data.messageList,
+    scrollController: ScrollController(),
+    chatUsers: [
+      ChatUser(
+        id: '2',
+        name: 'Simform',
+        profilePhoto: Data.profileImage,
       ),
+      ChatUser(
+        id: '3',
+        name: 'Jhon',
+        profilePhoto: Data.profileImage,
+      ),
+      ChatUser(
+        id: '4',
+        name: 'Mike',
+        profilePhoto: Data.profileImage,
+      ),
+      ChatUser(
+        id: '5',
+        name: 'Rich',
+        profilePhoto: Data.profileImage,
+      ),
+    ],
+  );
 
+  void _showHideTypingIndicator() {
+    _chatController.setTypingIndicator = !_chatController.showTypingIndicator;
+  }
 
-    ]));
-}
-}
-class Posts extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
-    return Container(color:Colors.white,margin: EdgeInsets.only(left: 7,top: 12,right: 7),child:
-    Column(
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: CircleAvatar(
-                radius: 25,
-                backgroundImage:AssetImage("images/6.jpeg"),
+    return Scaffold(
+      body: ChatView(
+        currentUser: currentUser,
+        chatController: _chatController,
+        onSendTap: _onSendTap,
+        featureActiveConfig: const FeatureActiveConfig(
+          lastSeenAgoBuilderVisibility: true,
+          receiptsBuilderVisibility: true,
+        ),
+        chatViewState: ChatViewState.hasMessages,
+        chatViewStateConfig: ChatViewStateConfiguration(
+          loadingWidgetConfig: ChatViewStateWidgetConfiguration(
+            loadingIndicatorColor: theme.outgoingChatBubbleColor,
+          ),
+          onReloadButtonTap: () {},
+        ),
+        typeIndicatorConfig: TypeIndicatorConfiguration(
+          flashingCircleBrightColor: theme.flashingCircleBrightColor,
+          flashingCircleDarkColor: theme.flashingCircleDarkColor,
+        ),
+        appBar: ChatViewAppBar(
+          elevation: theme.elevation,
+          backGroundColor: theme.appBarColor,
+          profilePicture: Data.profileImage,
+          backArrowColor: theme.backArrowColor,
+          chatTitle: "Chat view",
+          chatTitleTextStyle: TextStyle(
+            color: theme.appBarTitleTextStyle,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            letterSpacing: 0.25,
+          ),
+          userStatus: "online",
+          userStatusTextStyle: const TextStyle(color: Colors.grey),
+          actions: [
+            IconButton(
+              onPressed: _onThemeIconTap,
+              icon: Icon(
+                isDarkTheme
+                    ? Icons.brightness_4_outlined
+                    : Icons.dark_mode_outlined,
+                color: theme.themeIconColor,
               ),
             ),
-            Padding(padding: EdgeInsets.only(left: 10)),
-            Column(crossAxisAlignment: CrossAxisAlignment.start,children: [
-              Text("Dohaa aymann",style:TextStyle(fontSize: 19)),
-              // Text("${DateTime.now().hour}h.")
-              Text("8h.")
-              // Icon(Icons.planet)
-            ],),Padding(padding: EdgeInsets.only(left:115)),
-
-            Expanded(
-              child:IconButton(onPressed: (){}, icon: FaIcon(FontAwesomeIcons.ellipsis,size: 19,))
+            IconButton(
+              tooltip: 'Toggle TypingIndicator',
+              onPressed: _showHideTypingIndicator,
+              icon: Icon(
+                Icons.keyboard,
+                color: theme.themeIconColor,
+              ),
             ),
-            Align(alignment: Alignment.bottomRight,
-                child: IconButton(onPressed: (){}, icon: Icon(Icons.close))),
+          ],
+        ),
+        chatBackgroundConfig: ChatBackgroundConfiguration(
+          messageTimeIconColor: theme.messageTimeIconColor,
+          messageTimeTextStyle: TextStyle(color: theme.messageTimeTextColor),
+          defaultGroupSeparatorConfig: DefaultGroupSeparatorConfiguration(
+            textStyle: TextStyle(
+              color: theme.chatHeaderColor,
+              fontSize: 17,
+            ),
+          ),
+          backgroundColor: theme.backgroundColor,
+        ),
+        sendMessageConfig: SendMessageConfiguration(
+          imagePickerIconsConfig: ImagePickerIconsConfiguration(
+            cameraIconColor: theme.cameraIconColor,
+            galleryIconColor: theme.galleryIconColor,
+          ),
+          replyMessageColor: theme.replyMessageColor,
+          defaultSendButtonColor: theme.sendButtonColor,
+          replyDialogColor: theme.replyDialogColor,
+          replyTitleColor: theme.replyTitleColor,
+          textFieldBackgroundColor: theme.textFieldBackgroundColor,
+          closeIconColor: theme.closeIconColor,
+          textFieldConfig: TextFieldConfiguration(
+            onMessageTyping: (status) {
+              /// Do with status
+              debugPrint(status.toString());
+            },
+            compositionThresholdTime: const Duration(seconds: 1),
+            textStyle: TextStyle(color: theme.textFieldTextColor),
+          ),
+          micIconColor: theme.replyMicIconColor,
+          voiceRecordingConfiguration: VoiceRecordingConfiguration(
+            backgroundColor: theme.waveformBackgroundColor,
+            recorderIconColor: theme.recordIconColor,
+            waveStyle: WaveStyle(
+              showMiddleLine: false,
+              waveColor: theme.waveColor ?? Colors.white,
+              extendWaveform: true,
+            ),
+          ),
+        ),
+        chatBubbleConfig: ChatBubbleConfiguration(
+          outgoingChatBubbleConfig: ChatBubble(
+            linkPreviewConfig: LinkPreviewConfiguration(
+              backgroundColor: theme.linkPreviewOutgoingChatColor,
+              bodyStyle: theme.outgoingChatLinkBodyStyle,
+              titleStyle: theme.outgoingChatLinkTitleStyle,
+            ),
+            receiptsWidgetConfig:
+            const ReceiptsWidgetConfig(showReceiptsIn: ShowReceiptsIn.all),
+            color: theme.outgoingChatBubbleColor,
+          ),
+          inComingChatBubbleConfig: ChatBubble(
+            linkPreviewConfig: LinkPreviewConfiguration(
+              linkStyle: TextStyle(
+                color: theme.inComingChatBubbleTextColor,
+                decoration: TextDecoration.underline,
+              ),
+              backgroundColor: theme.linkPreviewIncomingChatColor,
+              bodyStyle: theme.incomingChatLinkBodyStyle,
+              titleStyle: theme.incomingChatLinkTitleStyle,
+            ),
+            textStyle: TextStyle(color: theme.inComingChatBubbleTextColor),
+            onMessageRead: (message) {
+              /// send your message reciepts to the other client
+              debugPrint('Message Read');
+            },
+            senderNameTextStyle:
+            TextStyle(color: theme.inComingChatBubbleTextColor),
+            color: theme.inComingChatBubbleColor,
+          ),
+        ),
+        replyPopupConfig: ReplyPopupConfiguration(
+          backgroundColor: theme.replyPopupColor,
+          buttonTextStyle: TextStyle(color: theme.replyPopupButtonColor),
+          topBorderColor: theme.replyPopupTopBorderColor,
+        ),
+        // reactionPopupConfig: ReactionPopupConfiguration(
+        //   shadow: BoxShadow(
+        //     color: isDarkTheme ? Colors.black54 : Colors.grey.shade400,
+        //     blurRadius: 20,
+        //   ),
+        //   backgroundColor: theme.reactionPopupColor,
+        // ),
+        messageConfig: MessageConfiguration(
+          // messageReactionConfig: MessageReactionConfiguration(
+          //   backgroundColor: theme.messageReactionBackGroundColor,
+          //   borderColor: theme.messageReactionBackGroundColor,
+          //   reactedUserCountTextStyle:
+          //   TextStyle(color: theme.inComingChatBubbleTextColor),
+          //   reactionCountTextStyle:
+          //   TextStyle(color: theme.inComingChatBubbleTextColor),
+          //   reactionsBottomSheetConfig: ReactionsBottomSheetConfiguration(
+          //     backgroundColor: theme.backgroundColor,
+          //     reactedUserTextStyle: TextStyle(
+          //       color: theme.inComingChatBubbleTextColor,
+          //     ),
+          //     reactionWidgetDecoration: BoxDecoration(
+          //       color: theme.inComingChatBubbleColor,
+          //       boxShadow: [
+          //         BoxShadow(
+          //           color: isDarkTheme ? Colors.black12 : Colors.grey.shade200,
+          //           offset: const Offset(0, 20),
+          //           blurRadius: 40,
+          //         )
+          //       ],
+          //       borderRadius: BorderRadius.circular(10),
+          //     ),
+          //   ),
+          // ),
+          imageMessageConfig: ImageMessageConfiguration(
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+            shareIconConfig: ShareIconConfiguration(
+              defaultIconBackgroundColor: theme.shareIconBackgroundColor,
+              defaultIconColor: theme.shareIconColor,
+            ),
+          ),
+        ),
+        profileCircleConfig: const ProfileCircleConfiguration(
+          profileImageUrl: Data.profileImage,
+        ),
+        repliedMessageConfig: RepliedMessageConfiguration(
+          backgroundColor: theme.repliedMessageColor,
+          verticalBarColor: theme.verticalBarColor,
+          repliedMsgAutoScrollConfig: RepliedMsgAutoScrollConfig(
+            enableHighlightRepliedMsg: true,
+            highlightColor: Colors.pinkAccent.shade100,
+            highlightScale: 1.1,
+          ),
+          textStyle: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.25,
+          ),
+          replyTitleTextStyle: TextStyle(color: theme.repliedTitleTextColor),
+        ),
+        swipeToReplyConfig: SwipeToReplyConfiguration(
+          replyIconColor: theme.swipeToReplyIconColor,
+        ),
+      ),
+    );
+  }
 
-          ],),
-        Padding(
-          padding: const EdgeInsets.only(top: 8,left: 3,bottom: 4),
-          child: Align(alignment:Alignment.topLeft,child: Text("Hello,Just try posting",style:TextStyle(fontSize: 19),)),
-        ),
-        Padding(padding: EdgeInsets.all(5)),
-        Row(children: [
-          Icon(Icons.thumb_up_rounded,color: Colors.blue,),
-          Text(" 12"),
-          Expanded(
-              child:Align(alignment: Alignment.bottomRight,
-                  child: Text("12 comments"))),
-          Padding(padding: EdgeInsets.only(left: 10)),
-          Text("2 shares")
-        ],),
-        Divider(color: Colors.grey,height: 2,thickness:0.5,),
-        Padding(
-          padding: const EdgeInsets.only(top: 9,bottom: 7),
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,children: [
-            InkWell(onTap: (){print("tab");},child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Icon(Icons.thumb_up_alt_outlined,color:Colors.black),Text(" Like",style:TextStyle(color:Colors.black),)
-              ],),),
-            InkWell(onTap: (){print("tab");},child:Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                FaIcon(FontAwesomeIcons.comment),Text("  Comment",style:TextStyle(color:Colors.black),)
-              ],),),
-            InkWell(onTap: (){print("tab");},child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Icon(Icons.send,color:Colors.black),Text(" Send",style:TextStyle(color:Colors.black),)
-              ],),),
-          ],),
-        ),
-        Container(color:Colors.grey,height:5,child: Divider(color: Colors.grey,thickness:0.5,)),
-      ],
-    )
-      ,);
+  void _onSendTap(
+      String message,
+      ReplyMessage replyMessage,
+      MessageType messageType,
+      ) {
+    print(messageType);
+    print(message);
+    final id = int.parse(Data.messageList.last.id) + 1;
+
+    _chatController.addMessage(
+      Message(
+        id: id.toString(),
+        createdAt: DateTime.now(),
+        message: message,
+        sendBy: currentUser.id,
+        replyMessage: replyMessage,
+        messageType: messageType,
+      ),
+    );
+    Future.delayed(const Duration(milliseconds: 300), () {
+      _chatController.initialMessageList.last.setStatus =
+          MessageStatus.undelivered;
+    });
+    Future.delayed(const Duration(seconds: 1), () {
+      _chatController.initialMessageList.last.setStatus = MessageStatus.read;
+    });
   }
+
+  void _onThemeIconTap() {
+    setState(() {
+      if (isDarkTheme) {
+        theme = LightTheme();
+        isDarkTheme = false;
+      } else {
+        theme = DarkTheme();
+        isDarkTheme = true;
+      }
+    });
   }
+}

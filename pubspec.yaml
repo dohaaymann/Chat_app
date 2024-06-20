@@ -13,9 +13,9 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.5
 #  firebase: ^9.0.3
-  firebase_auth: ^4.19.2
-  firebase_core: ^2.30.0
-  cloud_firestore: ^4.8.2
+  firebase_auth: ^5.1.0
+  firebase_core: ^3.1.0
+  cloud_firestore: ^5.0.1
   font_awesome_flutter: ^10.5.0
   get: ^4.6.6
   http: ^1.2.1
@@ -27,17 +27,20 @@ dependencies:
   open_filex: ^4.4.0
   chatview:
     path: ../
-  firebase_messaging: ^14.9.1
+  firebase_messaging: ^15.0.1
   flutter_custom_clippers: ^2.1.0
-  firebase_storage: ^11.7.5
-  firebase_app_check: ^0.2.2+5
+  firebase_storage: ^12.0.1
+  firebase_app_check: ^0.3.0+1
+  left_scroll_actions: ^2.1.2
+  fluttertoast: ^8.2.6
+  provider: ^6.1.2
 #  firebase_messaging: ^14.9.1
 #  firebase_analytics: ^10.10.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.1
+  flutter_lints: ^4.0.0
 
 
 flutter:
@@ -48,5 +51,7 @@ flutter:
     - image/3.jpg
     - image/back/4.jpg
     - image/back/backg.jpg
-    - image/unkown.png
+#    - image/unkown.png
     - image/
+    - image/chatting-app.png
+    - image/message.png

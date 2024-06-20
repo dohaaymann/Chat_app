@@ -14,6 +14,8 @@ import 'package:example/main.dart';
 import 'package:example/auth/signup.dart';
 import 'package:example/widgets/customtext.dart';
 import 'package:example/widgets/database.dart';
+
+import '../widgets/custombutton.dart';
 class signup extends StatefulWidget {
   const signup({Key? key}) : super(key: key);
 
@@ -54,13 +56,15 @@ class _signupState extends State<signup> {
               Get.to(()=> messages({"${FirebaseAuth.instance.currentUser!.uid}"}));
             });
             await auth.currentUser!.updateDisplayName(sname.text);
-            // await auth.currentUser!.updatePhotoURL("File: '/data/user/0/com.example.cloud_error/cache/176ed10c-2ae7-4789-9f43-68ca42d7f2ac/1000000037.jpg'");
+            await auth.currentUser!.updatePhotoURL("https://firebasestorage.googleapis.com/v0/b/base-8c0bc.appspot.com/o/files%2F245471000000037.jpg?alt=media&token=bcf1b423-fbab-4673-92df-c8307e59c930");
 
             await FirebaseFirestore.instance
                 .collection("accounts")
                 .doc("${auth.currentUser?.email}").set({
                 "name":"${sname.text}",
                 "password":"${spass.text}",
+              "bio":'Busy',
+                 "photo":"https://firebasestorage.googleapis.com/v0/b/base-8c0bc.appspot.com/o/files%2F245471000000037.jpg?alt=media&token=bcf1b423-fbab-4673-92df-c8307e59c930"
             });
           })
           .catchError((err) {
@@ -103,17 +107,7 @@ class _signupState extends State<signup> {
               margin: EdgeInsets.only(top:30,left: 10,right: 10),
               child: customtext("Password",spass),),
             SizedBox(height:20,),
-            waitt?Container(
-              height: 44.0,
-              decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(25)),
-                  gradient: LinearGradient(colors: [accentPurpleColor,pinkyy,pinkyy,accentPurpleColor])),
-              child: ElevatedButton(
-                onPressed: () {Signup();},
-                style: ElevatedButton.styleFrom(fixedSize: Size(150,25),
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent),
-                child: Text('Signup',style: TextStyle(color:Colors.white,fontSize: 22)),
-              ),):CircularProgressIndicator(),
+            waitt?CustomButton(text: "Signup",onTap:()async{await Signup();},height:50.0,width:150.0):CircularProgressIndicator(),
           ] ),
     ],);
   }

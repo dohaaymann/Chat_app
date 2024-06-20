@@ -1,13 +1,19 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:example/pages/settings.dart';
+import 'package:example/Settings/settings.dart';
+import 'package:example/main.dart';
+import 'package:example/widgets/custombutton.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -23,21 +29,51 @@ class edit_profile extends StatefulWidget {
 class _edit_profileState extends State<edit_profile> {
   @override
   bool obscure=true;
-  List fields_name=['Name','Email','Password'];
+  List fields_name=['Name','Email','bio','Password'];
   final TextEditingController _name = TextEditingController();
   final TextEditingController _email = TextEditingController();
+  final TextEditingController _bio = TextEditingController();
   final TextEditingController _pass= TextEditingController();
   late List<TextEditingController> fields_controller;
   @override
 
   final storage=FirebaseStorage.instance.ref().child("images");
   var auth=FirebaseAuth.instance;
-  var user= FirebaseFirestore.instance
-      .collection("accounts")
-      .doc("${FirebaseAuth.instance.currentUser?.email}");
+  var user= FirebaseFirestore.instance.collection("accounts").doc("${FirebaseAuth.instance.currentUser?.email}");
+  File? selectedImage;
+  var photo;  var filePath;
+  final picker = ImagePicker();
+  var result;
+
+var pic,Url;
+  _pickFile(var res) async {
+    if (res == null) return;
+    // final file=File(res!.path!);
+    try{
+      var Store=FirebaseStorage.instance.ref();
+      var r_name=Random().nextInt(100000);
+      final pathh="files/$r_name${res.name}";
+      final file=File(res!.path!);
+    final upload= await Store.child(pathh).putFile(file);
+     Url=await Store.child(pathh).getDownloadURL();
+        await FirebaseFirestore.instance
+            .collection("accounts")
+            .doc("${auth.currentUser?.email}").update({
+          "name":"${_name.text}",
+          "password":"${_pass.text}",
+          "bio":"${_bio.text}",
+          "photo":"$Url"
+        }).then((value)async{
+          await auth.currentUser!.updateProfile(displayName: _name.text,photoURL:Url.toString() );
+          // auth.currentUser!.updatePhotoURL();
+        });
+    }
+    catch(e){print("ERROR: $e");}
+
+  }
   Future<void> get_password() async {
     try {
-      var userEmail = FirebaseAuth.instance.currentUser?.email;
+      var userEmail = await FirebaseAuth.instance.currentUser?.email;
       if (userEmail != null) {
         var documentSnapshot = await FirebaseFirestore.instance
             .collection('accounts')
@@ -45,8 +81,10 @@ class _edit_profileState extends State<edit_profile> {
             .get();
 
         if (documentSnapshot.exists) {
-          setState(() {
-           _pass.text=documentSnapshot.get('password'); // Access the password field
+          setState(() async{
+           _pass.text=await documentSnapshot.get('password'); // Access the password field
+           _bio.text=await documentSnapshot.get('bio'); // Access the password field
+           // photo=await documentSnapshot.get('photo'); // Access the password field
           });
         } else {
           print('Document does not exist');
@@ -56,39 +94,33 @@ class _edit_profileState extends State<edit_profile> {
       print('Error fetching password: $e');
     }
   }
-  File? selectedImage;
-  var photo;
-  late String _responseText;
-  final picker = ImagePicker();
-
   Future<void> _pickImageFromGallery() async {
     try {
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        setState(() {
-          selectedImage = File(pickedFile.path);
-          // auth.currentUser!.updatePhotoURL(selectedImage.toString());
-          photo=selectedImage;
+      result = await picker.pickImage(source: ImageSource.gallery);
+      if (result != null) {
+        setState((){
+          selectedImage = File(result.path);
+          filePath=selectedImage;
         });
-        print("///////////////");
-        print("$selectedImage");
-        print("///////////////");
       }
     } catch (e) {
       print('Error picking image: $e');
     }}
+var Photo;
   void initState() {
     // TODO: implement initState
     _name.text=auth.currentUser!.displayName!;
     _email.text=auth.currentUser!.email!;
-    var filePath=auth.currentUser!.photoURL.toString();
-    filePath= filePath.replaceFirst("File: '", "");
-    filePath= filePath.replaceAll("'", "");
-    photo=File(filePath);
+    Photo=auth.currentUser!.photoURL.toString();
+    // filePath= filePath.replaceFirst("File: '", "");
+    // filePath= filePath.replaceAll("'", "");
+    // selectedImage=File(filePath);
    get_password();
+
     // _name.text=auth.currentUser!.;
-    fields_controller=[_name,_email,_pass];
+    fields_controller=[_name,_email,_bio,_pass];
     super.initState();
+
   }
   Widget build(BuildContext context) {
     return Scaffold(
@@ -106,7 +138,7 @@ class _edit_profileState extends State<edit_profile> {
           ClipPath(
             clipper: WaveClipperOne(),
             child: Container(height:200,decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [pinkyy,pinkyy,accentPinkColor,lightpinkyy])
+                gradient: LinearGradient(colors:[accentPurple,pinkyy])
             ),
               // child: Text("Hello! \n ${auth.currentUser!.displayName}",style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.white),),
             ),
@@ -114,9 +146,9 @@ class _edit_profileState extends State<edit_profile> {
 
 
           Container(
-            height: 500,
+            height:550,
           padding:const EdgeInsets.fromLTRB(20,5,20,0),
-          margin: const EdgeInsets.fromLTRB(20,200,20,0),
+          margin: const EdgeInsets.fromLTRB(20,150,20,0),
           decoration: const BoxDecoration(
             color: Colors.white
           ),
@@ -143,7 +175,7 @@ class _edit_profileState extends State<edit_profile> {
                         ),
                       ),
                     ),
-                    const SizedBox(height:30)
+                    const SizedBox(height:15)
                   ],
                 ),
               ],
@@ -152,21 +184,22 @@ class _edit_profileState extends State<edit_profile> {
 
 
           Container(
-            decoration: BoxDecoration(color:accentPurpleColor,
+            decoration: BoxDecoration(color:pinkyy,
                 borderRadius:BorderRadius.circular(100)),
-            margin: const EdgeInsets.only(top:130,left:15),
+            margin: const EdgeInsets.only(top:80,left:15),
             child:Stack(alignment: Alignment.center,
               children: [
               CircleAvatar(
                   radius:80,backgroundImage:
-              FileImage(photo!),
+             selectedImage.toString() =='null'?
+             NetworkImage(Photo) as ImageProvider
+                  : FileImage(selectedImage!),
+             //    ,
                 )
                 , Container(margin: const EdgeInsets.fromLTRB(110,120,20,0),
                   child: CircleAvatar(backgroundColor: Colors.grey,
                     radius:20,child:IconButton(onPressed: (){
                       _pickImageFromGallery();
-             print("${auth.currentUser!.photoURL}");
-
                     }, icon:const Icon(CupertinoIcons.camera_fill,size:18,)) ,),
                 ),
               ],
@@ -174,38 +207,38 @@ class _edit_profileState extends State<edit_profile> {
           ),
 
 
-          Align(alignment: Alignment.bottomCenter,
-            child: InkWell(onTap: (){
-              auth.currentUser!.updateDisplayName(_name.text);
+          Container(margin: EdgeInsets.only(bottom:80),
+            child: Align(alignment: Alignment.bottomCenter,
+              child:
+              CustomButton(onTap: ()async{
+                // auth.currentUser!.updateDisplayName(_name.text);
               auth.currentUser!.updatePassword(_pass.text);
-              auth.currentUser!.updatePhotoURL(selectedImage.toString());
-              // Get.showSnackbar(GetSnackBar(title:"sssss",));
-            }, child:Container(
-              margin: const EdgeInsets.only(bottom: 80),
-              width: 150,height:50,alignment: Alignment.center,
-                decoration:BoxDecoration(borderRadius: BorderRadius.circular(25),
-                gradient: LinearGradient(colors: [accentPurpleColor,pinkyy,pinkyy,accentPurpleColor])
-            ),
-                child: const Text("Save",style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 22),))
+              _pickFile(result);
+              Fluttertoast.showToast(
+                msg: "           Saved           ",
+                toastLength: Toast.LENGTH_SHORT,
+                textColor: Colors.white,
+                fontSize:18,gravity:ToastGravity.CENTER,
+                backgroundColor:accentPurpleColor,
+              ).then((value) => Get.to(()=>settings("${auth.currentUser!.displayName}","${auth.currentUser!.photoURL}")),);}, text:"Save",width: 150.0,height: 50.0,)
             ),
           ),
 
 
           Container(
-            margin: const EdgeInsets.fromLTRB(10,25,10,10),
+            margin: const EdgeInsets.fromLTRB(10,30,10,10),
             child: Column(
               children: [
                 Row(
                   children: [
                     IconButton(onPressed: () {
                      // Navigator.of(context).pop();
-                      Get.to(()=>settings());
+                      Get.to(()=>settings("${auth.currentUser!.displayName}","${auth.currentUser!.photoURL}"));
                     }, icon:const Icon(Icons.arrow_back_ios,color: Colors.white,)),
                     const  SizedBox(width:100,),
                     const Text("Profile",style: TextStyle(fontSize: 22,fontWeight: FontWeight.bold,color: Colors.white),)
                   ],),
                 const SizedBox(height:30,),
-
               ],
             ),
           )

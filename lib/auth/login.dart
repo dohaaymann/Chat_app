@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../Constant/colors.dart';
 import '../homescreen.dart';
+import '../widgets/custombutton.dart';
 class login extends StatefulWidget {
   const login({Key? key}) : super(key: key);
 
@@ -39,19 +40,19 @@ class _loginState extends State<login> {
               .catchError((err) {
             if (err.code == "invalid-email") {
               return Get.snackbar(
-                  "Error", "Please enter a valid email address",
+                  "Error", "Please enter a valid email address",colorText: Colors.white,
                   backgroundColor: Colors.red);
             }
             if (err.message ==
                 "The password is invalid or the user does not have a password.") {
               return Get.snackbar(
-                  "Error", "ًWrong email address or password",
+                  "Error", "ًWrong email address or password",colorText: Colors.white,
                   backgroundColor: Colors.red);
             }
             if (err.message ==
                 "There is no user record corresponding to this identifier. The user may have been deleted.") {
               return Get.snackbar(
-                  "Error", "Email is not register with us",
+                  "Error", "Email is not register with us",colorText: Colors.white,
                   backgroundColor: Colors.red);
             }
             return Get.snackbar("Error", err.message,
@@ -97,19 +98,9 @@ class _loginState extends State<login> {
               child: customtext("Password",lpass),),
             Align(alignment:Alignment.topRight,child: TextButton(onPressed: (){}, child: Text("Forget Password?",style:TextStyle(fontSize:17,color: pinkyy,fontWeight: FontWeight.bold),))),
             SizedBox(height:8,),
-            waitt? Container(
-              height: 44.0,
-              decoration: BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(25)),
-                  gradient: LinearGradient(colors: [accentPurpleColor,pinkyy,pinkyy,accentPurpleColor])),
-              child:ElevatedButton(
-                onPressed: () {
-                  login();
-                  },
-                style: ElevatedButton.styleFrom(fixedSize: Size(150,25),
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent),
-                child: Text('Login',style: TextStyle(fontSize: 22,color: Colors.white)),
-              )):CircularProgressIndicator()] ),
+            waitt? CustomButton(text: "Login",onTap:()async{
+              await login();
+            },height:50.0,width:150.0):CircularProgressIndicator()] ),
     ],);
   }
 }

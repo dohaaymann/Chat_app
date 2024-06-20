@@ -298,6 +298,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:example/face.dart';
 import 'package:example/messages.dart';
 import 'package:example/auth/auth.dart';
+import 'package:example/models/providerr.dart';
 import 'package:example/models/theme.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -307,6 +308,7 @@ import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -319,7 +321,7 @@ void main() async{
   final fcmToken = await FirebaseMessaging.instance.getToken();
   await FirebaseMessaging.instance.setAutoInitEnabled(true);
   print("FCMToken $fcmToken");
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(create: (context) => providerr(),child:const MyApp(),));
 }
 getdata()async{
   var query = FirebaseFirestore.instance
@@ -347,7 +349,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Flutter Demo',debugShowCheckedModeBanner: false,
-      // theme: ThemeData.dark(),
       home: MyHomePage() ,
     );
   }

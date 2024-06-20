@@ -1,9 +1,11 @@
+import 'package:example/Constant/colors.dart';
 import 'package:flutter/material.dart';
 
 class AppTheme {
   final Color? appBarColor;
   final Color? backArrowColor;
   final Color? backgroundColor;
+  final Color? backgroundColorr;
   final Color? replyDialogColor;
   final Color? replyTitleColor;
   final Color? textFieldBackgroundColor;
@@ -42,6 +44,7 @@ class AppTheme {
   final Color? waveColor;
   final Color? replyMicIconColor;
   final Color? messageReactionBorderColor;
+  final Color? buttonColor;
 
   final Color? verticalBarColor;
   final Color? chatHeaderColor;
@@ -61,6 +64,7 @@ class AppTheme {
     this.cameraIconColor,
     this.galleryIconColor,
     this.flashingCircleDarkColor,
+    this.buttonColor,
     this.flashingCircleBrightColor,
     this.outgoingChatLinkBodyStyle,
     this.incomingChatLinkBodyStyle,
@@ -80,6 +84,7 @@ class AppTheme {
     this.appBarColor,
     this.backArrowColor,
     this.backgroundColor,
+    this.backgroundColorr,
     this.replyDialogColor,
     this.replyTitleColor,
     this.textFieldBackgroundColor,
@@ -125,7 +130,9 @@ class DarkTheme extends AppTheme {
     Color appBarColor = const Color(0xff1d1b25),
     Color backArrowColor = Colors.white,
     Color backgroundColor = const Color(0xff272336),
+    Color backgroundColorr = const Color(0xff272336),
     Color replyDialogColor = const Color(0xff272336),
+    Color buttonColor = const Color(0xff272336),
     Color linkPreviewOutgoingChatColor = const Color(0xff272336),
     Color linkPreviewIncomingChatColor = const Color(0xff9f85ff),
     TextStyle linkPreviewIncomingTitleStyle = const TextStyle(),
@@ -163,8 +170,8 @@ class DarkTheme extends AppTheme {
     Color replyMicIconColor = Colors.white,
   }) : super(
           closeIconColor: closeIconColor,
-          verticalBarColor: verticalBarColor,
-          textFieldBackgroundColor: textFieldBackgroundColor,
+    buttonColor:buttonColor,
+    textFieldBackgroundColor: textFieldBackgroundColor,
           replyTitleColor: replyTitleColor,
           replyDialogColor: replyDialogColor,
           backgroundColor: backgroundColor,
@@ -229,7 +236,10 @@ class LightTheme extends AppTheme {
     Color appBarColor = Colors.white,
     Color backArrowColor = const Color(0xffEE5366),
     Color backgroundColor = const Color(0xffeeeeee),
+    Color backgroundColorr =const Color(0xffFCD8DC),
     Color replyDialogColor = const Color(0xffFCD8DC),
+    Color buttonColor= const Color(0xffEE5366),
+
     Color linkPreviewOutgoingChatColor = const Color(0xffFCD8DC),
     Color linkPreviewIncomingChatColor = const Color(0xFFEEEEEE),
     TextStyle linkPreviewIncomingTitleStyle = const TextStyle(),
@@ -267,6 +277,7 @@ class LightTheme extends AppTheme {
     Color replyMicIconColor = Colors.black,
   }) : super(
           reactionPopupColor: reactionPopupColor,
+          buttonColor:buttonColor,
           closeIconColor: closeIconColor,
           verticalBarColor: verticalBarColor,
           textFieldBackgroundColor: textFieldBackgroundColor,
