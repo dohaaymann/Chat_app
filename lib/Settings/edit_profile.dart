@@ -64,7 +64,7 @@ var pic,Url;
           "bio":"${_bio.text}",
           "photo":"$Url"
         }).then((value)async{
-          await auth.currentUser!.updateProfile(displayName: _name.text,photoURL:Url.toString() );
+          await auth.currentUser!.updateProfile(displayName: _name.text,photoURL:Url.toString());
           // auth.currentUser!.updatePhotoURL();
         });
     }
@@ -81,6 +81,7 @@ var pic,Url;
             .get();
 
         if (documentSnapshot.exists) {
+          print("*********************");
           setState(() async{
            _pass.text=await documentSnapshot.get('password'); // Access the password field
            _bio.text=await documentSnapshot.get('bio'); // Access the password field
@@ -109,17 +110,13 @@ var pic,Url;
 var Photo;
   void initState() {
     // TODO: implement initState
+    get_password();
     _name.text=auth.currentUser!.displayName!;
     _email.text=auth.currentUser!.email!;
     Photo=auth.currentUser!.photoURL.toString();
-    // filePath= filePath.replaceFirst("File: '", "");
-    // filePath= filePath.replaceAll("'", "");
-    // selectedImage=File(filePath);
-   get_password();
-
-    // _name.text=auth.currentUser!.;
     fields_controller=[_name,_email,_bio,_pass];
     super.initState();
+    get_password();
 
   }
   Widget build(BuildContext context) {
@@ -167,6 +164,7 @@ var Photo;
                         obscureText:fields_name[i]=='Password'?obscure:false,
                         decoration: InputDecoration(
                           border: const UnderlineInputBorder(),suffixIcon:fields_name[i]=='Password'? IconButton(onPressed: (){
+                            print(photo.toString());
                             setState(() {
                               obscure=!obscure;
                             });

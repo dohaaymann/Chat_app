@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:example/pages/forward_to.dart';
 import 'package:example/pages/friend_profile.dart';
+import 'package:example/testchat.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -96,7 +97,7 @@ class _chatState extends State<ChatScreen> {
     await documentReference.update({'firstmessage':b});
     await getCHECKFromDocument();
   }
-  Future<void> _getAccountDetails() async {
+  Future<void> _getmyAccountDetails() async {
     try {
       DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
           .collection('accounts')
@@ -115,15 +116,6 @@ class _chatState extends State<ChatScreen> {
       print('Error fetching document: $e');
     }
   }
-  // void initState() {
-  //   // print("//////${widget.doc}*************//////////${widget.user}");
-  //   _messageStreamController = StreamController<List<Message>>();
-  //   _messageStreamController.addStream(getMessageStream());
-  //    _getAccountDetails();
-  //    getCHECKFromDocument();
-  //   print("start");
-  //   super.initState();
-  // }
   void initState() {
     super.initState();
      _chatController = ChatController(
@@ -137,7 +129,7 @@ class _chatState extends State<ChatScreen> {
         ),
       ],
     );
-    _getAccountDetails();
+    _getmyAccountDetails();
     _initializeMessageStream();
     auth = FirebaseAuth.instance;
   }
@@ -255,12 +247,7 @@ class _chatState extends State<ChatScreen> {
                     messageLength.isEmpty ? messageLength = messageList : null;
                     updateCHECKInDocument(true);
                     // print(name);
-                    return ChatViewWidget(
-                        currentUser: currentUser,
-                        messageList: snapshot.data ?? [],
-                        chatController: _chatController,
-                        user: widget.user,name: name,photo: photo,
-                    );
+                    return  ChatWidget(currentUser, snapshot.data ?? [], _chatController, widget.user, getMessageStream(), name, photo);
                   }else{
                   messageList = snapshot.data!;getCHECKFromDocument();
                   messageLength.isEmpty ? messageLength = messageList : null;
@@ -302,13 +289,7 @@ class _chatState extends State<ChatScreen> {
                         print("message added3");
                     } else print("lists equall");}
 
-                  return ChatViewWidget(
-                    currentUser: currentUser,
-                    messageList: snapshot.data ?? [],
-                    chatController: _chatController,
-                    user: widget.user,
-                    getmessage: getMessageStream(),name: name,photo: photo,
-                  );
+                  return  ChatWidget(currentUser, snapshot.data ?? [], _chatController, widget.user, getMessageStream(), name, photo);
                 }
             }}
         )

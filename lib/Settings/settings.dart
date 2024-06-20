@@ -39,12 +39,17 @@ class _settingsState extends State<settings> {
   //   filePath= filePath.replaceAll("'", "");
   //   photo=File(filePath);
   // }
+  get_data()async{
+    photo=await auth.currentUser!.photoURL.toString();
+    name=await auth.currentUser!.displayName!;
+  }
   void initState() {
     // TODO: implement initState
     photo=auth.currentUser!.photoURL.toString();
     name=auth.currentUser!.displayName!;
     print("settings////////////////page");
     super.initState();
+    get_data();
   }
   Widget build(BuildContext context) {
   var Width=MediaQuery.of(context).size.width;
@@ -107,6 +112,8 @@ class _settingsState extends State<settings> {
                     InkWell(
                         onTap: () {
                           Get.to(()=>edit_profile());
+                          print("${auth.currentUser!.photoURL}");
+                          print("dddddddddddddddd");
                         },
                         child:Container(
                           height: 50,

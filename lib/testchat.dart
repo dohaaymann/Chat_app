@@ -48,10 +48,10 @@ Widget ChatWidget(var currentUser, var messageList, var chatController,  var use
     String documentPath2 = 'accounts/${user}/mess/${auth.currentUser?.email}';
     bool exists2 = await doesDocumentExist(documentPath2);
     !exists?await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(user).set({"time": DateTime.now(),"firstmessage":true}):null;
-    !exists2?await FirebaseFirestore.instance.collection("accounts").doc("${widget.user}").collection("mess").doc("${auth.currentUser?.email}").set({"time": DateTime.now(),"firstmessage":true}):null;
+    !exists2?await FirebaseFirestore.instance.collection("accounts").doc("${user}").collection("mess").doc("${auth.currentUser?.email}").set({"time": DateTime.now(),"firstmessage":true}):null;
     // print('Document exists: $exists');
     print("Ssssssssss5");
-    await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).collection("chat")
+    await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(user).collection("chat")
         .add({
       "id": get_random().toString(),
       "text": "${message}",

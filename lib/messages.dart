@@ -144,11 +144,12 @@ class _messagesState extends State<messages> {
                   builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Container(
-                        // child:SkeletonListView()
+                        child:CircularProgressIndicator()
                       );
 
                     }
                     if (snapshot.hasError) {
+                      print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeror");
                       return Text('Error: ${snapshot.error}');
                     }
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
