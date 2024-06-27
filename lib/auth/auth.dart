@@ -20,12 +20,12 @@ class _authState extends State<auth_p> {
       child: Scaffold(resizeToAvoidBottomInset: false,backgroundColor:Color(0xff291135),
           body:
           Container(
-            decoration:const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("image/back/backg.jpg"),colorFilter: ColorFilter.mode(Colors.black87,BlendMode.darken),
-                fit: BoxFit.cover,
-              ),
-            ),
+            // decoration:const BoxDecoration(
+            //   image: DecorationImage(
+            //     image: AssetImage("image/back/backg.jpg"),colorFilter: ColorFilter.mode(Colors.black87,BlendMode.darken),
+            //     fit: BoxFit.cover,
+            //   ),
+            // ),
             child: Container(
               margin: const EdgeInsets.only(left:10, right:10),
               child:

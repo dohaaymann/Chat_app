@@ -1,5 +1,6 @@
 import 'package:chatview/chatview.dart';
 import 'package:example/pages/friend_profile.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -13,39 +14,66 @@ import 'package:get/get.dart';
 import 'dart:math';
 
 import 'package:http/http.dart';
-import 'chatscreen.dart';
-import 'models/theme.dart';
+import 'package:provider/provider.dart';
 
-class ChatViewWidget extends StatefulWidget {
-  final ChatUser currentUser;
-  final List<Message> messageList;
-  final ChatController chatController;
-  final String user,name;
-  final photo;
-  var getmessage;
-  // Assuming GlobalKeys are used somewhere in this widget or its children
-  final GlobalKey<FormState> _formKey1 = GlobalKey<FormState>();
-  final GlobalKey<FormState> _formKey2 = GlobalKey<FormState>();
-  ChatViewWidget({
-    required this.currentUser,
-    required this.messageList,
-    required this.chatController,
-    required this.user,
-    this.getmessage, required this.name, required this.photo,
-  });
-
-  @override
-  State<ChatViewWidget> createState() => _ChatViewWidgetState();
-}
-
-class _ChatViewWidgetState extends State<ChatViewWidget> {
-  @override
-  Widget build(BuildContext context) {
-    final theme = isDarkTheme ? DarkTheme() : LightTheme();
+import '../chatscreen.dart';
+import '../models/SettingsProvider.dart';
+import '../notification.dart';
+// final ChatUser currentUser;
+// final List<Message> messageList;
+// final ChatController chatController;
+// final String user,name;
+// final photo;
+var getmessage;
+var auth=FirebaseAuth.instance;
+Widget Chat_Widget(var currentUser, var messageList, var chatController,  var user,var getmessage, var name, var photo,var bio,var token) {
+  _onSendTap(
+      String message,
+      ReplyMessage replyMessage,
+      MessageType messageType,
+      )async{
+    // print("/////////////${replyMessage}");
+    String documentPath = 'accounts/${auth.currentUser?.email}/mess/${user}';
+    bool exists = await doesDocumentExist(documentPath);
+    String documentPath2 = 'accounts/${user}/mess/${auth.currentUser?.email}';
+    bool exists2 = await doesDocumentExist(documentPath2);
+    !exists?await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(user).set({"time": DateTime.now(),"firstmessage":true,"isblocked":false}):
+    await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(user).update({"time": DateTime.now()});
+    !exists2?await FirebaseFirestore.instance.collection("accounts").doc("${user}").collection("mess").doc("${auth.currentUser?.email}").set({"time": DateTime.now(),"firstmessage":true}):
+    await FirebaseFirestore.instance.collection("accounts").doc("${user}").collection("mess").doc("${auth.currentUser?.email}").update({"time": DateTime.now()});
+    // print('Document exists: $exists');
+    await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(user).collection("chat")
+        .add({
+      "id": get_random().toString(),
+      "text": "${message}",
+      "replyMessage":replyMessage.message,
+      "istext": messageType.isText,
+      "sendby": auth.currentUser?.email,
+      "Time": DateTime.now()
+    }).then((value) {print("doneeeeee");});
+    await FirebaseFirestore.instance.collection("accounts").doc(user).collection("mess").doc("${auth.currentUser?.email}").collection("chat")
+        .add({
+      "id": get_random().toString(),
+      "text": "${message}",
+      "replyMessage":replyMessage.message,
+      "istext": messageType.isText,
+      "sendby": auth.currentUser?.email,
+      "Time": DateTime.now()
+    }).then((value) {
+      // var notify=Notification_();
+      // print("doneeeeee${DateTime.now()}");
+      // notify.sendPushNotification(
+      //     "$token"
+      //     ,"$name",
+      //     "${message}");
+    });
+  }
+  return Consumer<SettingsProvider>(builder: (context, provide, child){
+    var theme = provide.isDarkTheme ? DarkTheme() : LightTheme();
     return ChatView(
-      currentUser: widget.currentUser,
+      currentUser: currentUser,isBlocked:provide.isblock,
       loadingWidget:CircularProgressIndicator(),
-      chatController:widget.chatController,
+      chatController:chatController,
       onSendTap: _onSendTap,
       chatViewState: ChatViewState.hasMessages,
       chatViewStateConfig: ChatViewStateConfiguration(
@@ -60,8 +88,7 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
       ),
       appBar: ChatViewAppBar(
         frienfprofile:(){
-          Get.to(()=>friend_profile(name,widget.user,"busy",photo));
-          print("object");
+          Get.to(()=>friend_profile(name,user,bio,photo));
         },
         elevation: theme.elevation,
         backGroundColor: theme.appBarColor,
@@ -78,29 +105,20 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
         userStatusTextStyle: const TextStyle(color: Colors.grey),
         actions: [
           IconButton(
-            onPressed: _onThemeIconTap,
-            icon: Icon(
-              isDarkTheme
-                  ? Icons.brightness_4_outlined
-                  : Icons.dark_mode_outlined,
+            onPressed:(){},
+            icon: Icon(Icons.call,
               color: theme.themeIconColor,size:30,
             ),
           ),
-          IconButton(
-            tooltip: 'Toggle TypingIndicator',
-            onPressed: ()async{
-              int randomNumber = 0;
-              var random = Random();
-              setState(() {
-                randomNumber = random.nextInt(1000000000); // Generates a random number between 0 and 99
-              });
-              print(randomNumber.toString());
-            },
-            icon: Icon(
-              Icons.keyboard,
-              color: theme.themeIconColor,size:30,
-            ),
-          ),
+          // IconButton(
+          //   tooltip: 'Toggle TypingIndicator',
+          //   onPressed: ()async{
+          //   },
+          //   icon: Icon(
+          //     Icons.keyboard,
+          //     color: theme.themeIconColor,size:30,
+          //   ),
+          // ),
           SizedBox(width:10,)
         ],
       ),
@@ -174,15 +192,35 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
         ),
       ),
       replyPopupConfig: ReplyPopupConfiguration(
-        forward:(message) => print("111111111111111"),
-        onMoreTap:(Message  , replyMessage, messageType) {
-          print(Message);
-          print("*****-------------*********");
+        onMoreTap:(message) {
+          showModalBottomSheet(
+            context: context,
+            builder: (BuildContext context) {
+              return forward_to(message: message,);
+            },
+            isScrollControlled: true,
+          );
+        },DeleteTap: (message)async{
+          chatController.removeMessage(message);
+          int index = messageList.indexWhere((obj) => obj.id.toString()== '${message.id}');
+          QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+              .collection("accounts").doc("${auth.currentUser?.email}").collection("mess")
+              .doc(user).collection("chat").orderBy("Time")
+              .get();
+          // print(querySnapshot.docs[index].get("text"));
+          // print(querySnapshot2.docs[index].get("text"));
+          DocumentSnapshot lastDocument = querySnapshot.docs[index];
+
+          await FirebaseFirestore.instance
+              .collection("accounts")
+              .doc("${auth.currentUser?.email}")
+              .collection("mess")
+              .doc(user)
+              .collection("chat").doc(lastDocument.id).delete().then((value)async=>print("deleted"));
+        //  Navigator.of(context).p op();rint(message.message);
         },
         onUnsendTap:(Message)async{
-          print(Message.message);
-          await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).collection("chat");
-          print(check.toString());
+          await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(user).collection("chat");
           showDialog(context: context, builder:(context) {
             return AlertDialog(
                 shape:const UnderlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
@@ -204,16 +242,16 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
 
                           Container( margin:EdgeInsetsDirectional.only(top: 10,end: 5),child: ElevatedButton(
                               onPressed: ()async{
-                                widget.chatController.removeMessage(Message);
+                                chatController.removeMessage(Message);
                                 // _messageStreamController.addStream(widget.getmessage);
                                 Navigator.of(context).pop();
-                                int index = widget.messageList.indexWhere((obj) => obj.id.toString()== '${Message.id}');
+                                int index = messageList.indexWhere((obj) => obj.id.toString()== '${Message.id}');
                                 QuerySnapshot querySnapshot = await FirebaseFirestore.instance
                                     .collection("accounts").doc("${auth.currentUser?.email}").collection("mess")
-                                    .doc(widget.user).collection("chat").orderBy("Time")
+                                    .doc(user).collection("chat").orderBy("Time")
                                     .get();
                                 QuerySnapshot querySnapshot2 =await FirebaseFirestore.instance.
-                                collection("accounts").doc(widget.user).collection("mess").
+                                collection("accounts").doc(user).collection("mess").
                                 doc("${auth.currentUser?.email}").collection("chat")
                                     .orderBy("Time")
                                     .get();
@@ -226,11 +264,11 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
                                     .collection("accounts")
                                     .doc("${auth.currentUser?.email}")
                                     .collection("mess")
-                                    .doc(widget.user)
+                                    .doc(user)
                                     .collection("chat").doc(lastDocument.id).delete().then((value)async=>
                                 await FirebaseFirestore.instance.
                                 collection("accounts").
-                                doc(widget.user).
+                                doc(user).
                                 collection("mess").
                                 doc("${auth.currentUser?.email}")
                                     .collection("chat").doc(lastDocument2.id).delete());
@@ -250,15 +288,13 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
       ),
       messageConfig: MessageConfiguration(
         imageMessageConfig: ImageMessageConfiguration(
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           shareIconConfig: ShareIconConfiguration(onPressed:(message){
             // Get.to(()=>forward_to());
-            print(message.sendBy);
             showModalBottomSheet(
               context: context,
               builder: (BuildContext context) {
                 return forward_to(message: message,);
-
               },
               isScrollControlled: true,
             );
@@ -280,6 +316,7 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
           highlightScale: 1.1,
         ),
         textStyle: const TextStyle(
+          // color: provide.isDarkTheme?Colors.black:Colors.white,
           color: Colors.white,
           fontWeight: FontWeight.bold,
           letterSpacing: 0.25,
@@ -289,54 +326,7 @@ class _ChatViewWidgetState extends State<ChatViewWidget> {
       swipeToReplyConfig: SwipeToReplyConfiguration(
         replyIconColor: theme.swipeToReplyIconColor,
       ),
-    );
-  }
-
-  void _onThemeIconTap() {
-    setState(() {
-      if (isDarkTheme) {
-        theme = LightTheme();
-        isDarkTheme = false;
-      } else {
-        theme = DarkTheme();
-        isDarkTheme = true;
-      }
-    });
-  }
-
-  _onSendTap(
-      String message,
-      ReplyMessage replyMessage,
-      MessageType messageType,
-      )async{
-    // print("/////////////${replyMessage}");
-    String documentPath = 'accounts/${auth.currentUser?.email}/mess/${widget.user}';
-    bool exists = await doesDocumentExist(documentPath);
-    String documentPath2 = 'accounts/${widget.user}/mess/${auth.currentUser?.email}';
-    bool exists2 = await doesDocumentExist(documentPath2);
-    !exists?await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).set({"time": DateTime.now(),"firstmessage":true}):null;
-    !exists2?await FirebaseFirestore.instance.collection("accounts").doc("${widget.user}").collection("mess").doc("${auth.currentUser?.email}").set({"time": DateTime.now(),"firstmessage":true}):null;
-    // print('Document exists: $exists');
-    print("Ssssssssss5");
-    await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).collection("chat")
-        .add({
-      "id": get_random().toString(),
-      "text": "${message}",
-      "replyMessage":replyMessage.message,
-      "istext": messageType.isText,
-      "sendby": auth.currentUser?.email,
-      "Time": DateTime.now()
-    }).then((value) {print("doneeeeee");});
-    await FirebaseFirestore.instance.collection("accounts").doc(widget.user).collection("mess").doc("${auth.currentUser?.email}").collection("chat")
-        .add({
-      "id": get_random().toString(),
-      "text": "${message}",
-      "replyMessage":replyMessage.message,
-      "istext": messageType.isText,
-      "sendby": auth.currentUser?.email,
-      "Time": DateTime.now()
-    }).then((value) {
-      print("doneeeeee${DateTime.now()}");
-    });
-  }
+    );},
+  );
 }
+

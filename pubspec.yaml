@@ -34,6 +34,13 @@ dependencies:
   left_scroll_actions: ^2.1.2
   fluttertoast: ^8.2.6
   provider: ^6.1.2
+  skeletons: ^0.0.3
+  firebase_analytics: ^11.0.1
+  googleapis_auth: ^1.6.0
+  flutter_local_notifications: ^17.1.2
+  full_screen_image: ^2.0.0
+  path_provider: ^2.1.3
+  shared_preferences: ^2.2.3
 #  firebase_messaging: ^14.9.1
 #  firebase_analytics: ^10.10.4
 

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:example/messages.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:example/Constant/colors.dart';
@@ -22,6 +23,7 @@ class _signupState extends State<signup> {
   final database _data = database();
   bool waitt = true;
   var auth = FirebaseAuth.instance;
+  final fcmToken = FirebaseMessaging.instance.getToken();
 
   Future<void> signup() async {
     if (semail.text.isEmpty || spass.text.isEmpty || sname.text.isEmpty) {
@@ -51,7 +53,6 @@ class _signupState extends State<signup> {
         await auth.currentUser!.updatePhotoURL(
             "https://firebasestorage.googleapis.com/v0/b/base-8c0bc.appspot.com/o/files%2F245471000000037.jpg?alt=media&token=bcf1b423-fbab-4673-92df-c8307e59c930"
         );
-
         await FirebaseFirestore.instance
             .collection("accounts")
             .doc("${semail.text}")
@@ -59,11 +60,12 @@ class _signupState extends State<signup> {
           "name": sname.text,
           "password": spass.text,
           "bio": 'Busy',
+          "token":'$fcmToken',
           "photo":
           "https://firebasestorage.googleapis.com/v0/b/base-8c0bc.appspot.com/o/files%2F245471000000037.jpg?alt=media&token=bcf1b423-fbab-4673-92df-c8307e59c930",
         });
 
-        Future.delayed(const Duration(seconds: 5), () {
+        Future.delayed(const Duration(seconds:3), () {
           if (mounted) {
             Get.to(() => messages({"${FirebaseAuth.instance.currentUser!.uid}"}));
           }

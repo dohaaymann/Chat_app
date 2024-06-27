@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../Constant/colors.dart';
+import '../models/SettingsProvider.dart';
 
 class CustomButton extends StatefulWidget {
   final Function()? onTap;
@@ -19,7 +21,8 @@ class CustomButton extends StatefulWidget {
 class _CustomButtonState extends State<CustomButton> {
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    var provide=Provider.of<SettingsProvider>(context);
+  return InkWell(
       onTap: widget.onTap,
       child: Container(
         width:widget.width,
@@ -27,10 +30,19 @@ class _CustomButtonState extends State<CustomButton> {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(25),
-          gradient: LinearGradient(colors: [
-            accentPurple,
-            pinkyy,
-          ]),
+          gradient: !provide.isDarkTheme?LinearGradient(
+            // begin: Alignment.bottomCenter,end: Alignment.topCenter,
+              colors: [
+                // LIGHT MODE
+                // accentPurple,pinkyy
+                Color(0xff543863),
+                Color(0xff4CBF87),
+              ]):LinearGradient(tileMode: TileMode.mirror,
+              colors: [
+                // DARK MODE
+                Color(0xff7B7794),
+                Color(0xff231E73),
+              ]),
         ),
         child: Text(
           widget.text,

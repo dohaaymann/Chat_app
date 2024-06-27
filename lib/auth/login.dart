@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../Constant/colors.dart';
-import '../homescreen.dart';
 import '../widgets/custombutton.dart';
 class login extends StatefulWidget {
   const login({Key? key}) : super(key: key);
@@ -16,6 +15,7 @@ class login extends StatefulWidget {
 var n=1;
 class _loginState extends State<login> {
   @override
+  final _formKey = GlobalKey<FormState>();
   final lemail=TextEditingController();
   final lpass=TextEditingController();
   var auth=FirebaseAuth.instance;
@@ -24,14 +24,7 @@ class _loginState extends State<login> {
   Widget build(BuildContext context) {
 
     login() async {
-      if (lemail.text.isEmpty ||lpass.text.isEmpty) {
-        print("emptyyyy");
-        Get.snackbar("Erorr", "Please fill out this fields",
-            backgroundColor: Colors.red,
-            colorText: Colors.white);
-
-        return null;
-      } else {
+      if (_formKey.currentState!.validate()) {
         var user;
         try {
           user = await auth
@@ -78,6 +71,7 @@ class _loginState extends State<login> {
         }
       }
     }
+
     return Column(children: [
       SizedBox(height:80,),
 
@@ -87,20 +81,29 @@ class _loginState extends State<login> {
           child: Text("Welcome \nBack..",style: TextStyle(fontFamily:"ProtestStrike-Regular",letterSpacing:5,fontSize:45,color: Colors.white,fontWeight: FontWeight.bold),)),
 
       SizedBox(height:60,),
-      Column(
-          children: [
-            Container(
-                margin: EdgeInsets.only(left: 10,right: 10),
-                child:customtext("Email",lemail)
-            ),
-            Container(
-              margin: EdgeInsets.only(top:30,left: 10,right: 10),
-              child: customtext("Password",lpass),),
-            Align(alignment:Alignment.topRight,child: TextButton(onPressed: (){}, child: Text("Forget Password?",style:TextStyle(fontSize:17,color: pinkyy,fontWeight: FontWeight.bold),))),
-            SizedBox(height:8,),
-            waitt? CustomButton(text: "Login",onTap:()async{
-              await login();
-            },height:50.0,width:150.0):CircularProgressIndicator()] ),
+      SingleChildScrollView(physics: AlwaysScrollableScrollPhysics(),
+        child: Form(
+          key:_formKey,
+          child: Column(
+              children: [
+                Container(
+                    margin: EdgeInsets.only(left: 10,right: 10),
+                    child:customtext("Email",lemail)
+                ),
+                Container(
+                  margin: EdgeInsets.only(top:30,left: 10,right: 10),
+                  child: customtext("Password",lpass),
+                ),
+
+                Align(alignment:Alignment.topRight,child: TextButton(onPressed: (){}, child: Text("Forget Password?",style:TextStyle(fontSize:17,color: pinkyy,fontWeight: FontWeight.bold),))),
+                SizedBox(height:8,),
+                waitt? CustomButton(text: "Login",onTap:()async{
+
+                  await login();
+                },height:50.0,width:150.0):CircularProgressIndicator()]
+          ),
+        ),
+      ),
     ],);
   }
 }

@@ -2,9 +2,8 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:example/pages/forward_to.dart';
 import 'package:example/pages/friend_profile.dart';
-import 'package:example/testchat.dart';
+import 'package:example/widgets/ChatWidget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -12,8 +11,6 @@ import 'package:chatview/chatview.dart';
 import 'package:example/data.dart';
 import 'package:example/models/theme.dart';
 import 'dart:math';
-
-import 'chat__.dart';
 var _chatController;
 var name,photo;
 bool isselected=false;
@@ -24,8 +21,8 @@ get_random(){
   return randomNumber;
 }
 class ChatScreen extends StatefulWidget {
-  var doc,user;
-  ChatScreen(this.doc,this.user);
+  var name,email,bio,photo,token;
+  ChatScreen(this.name,this.email,this.bio,this.photo,this.token);
 
   @override
   State<ChatScreen> createState() => _chatState();
@@ -63,7 +60,7 @@ Future<bool> doesDocumentExist(String documentPath) async {
     return false; // Return false in case of error
   }
 }
-var check;
+var check,Isblocked;
 // late StreamController<List<Message>> _messageStreamController;
 class _chatState extends State<ChatScreen> {
   @override
@@ -72,7 +69,7 @@ class _chatState extends State<ChatScreen> {
         .collection("accounts")
         .doc("${auth.currentUser?.email}")
         .collection("mess")
-        .doc(widget.user)
+        .doc(widget.email)
         .get();
     if (docSnapshot.exists) {
       // Access the data from the document
@@ -92,30 +89,12 @@ class _chatState extends State<ChatScreen> {
         .collection("accounts")
         .doc("${auth.currentUser?.email}")
         .collection("mess")
-        .doc(widget.user);
+        .doc(widget.email);
     getCHECKFromDocument();
     await documentReference.update({'firstmessage':b});
     await getCHECKFromDocument();
   }
-  Future<void> _getmyAccountDetails() async {
-    try {
-      DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
-          .collection('accounts')
-          .doc(widget.doc)
-          .get();
 
-      if (docSnapshot.exists) {
-        setState(() {
-          name = docSnapshot['name'] ?? 'No name';
-          photo = docSnapshot['photo'] ?? 'No photo';
-        });
-      } else {
-        print('Document does not exist');
-      }
-    } catch (e) {
-      print('Error fetching document: $e');
-    }
-  }
   void initState() {
     super.initState();
      _chatController = ChatController(
@@ -123,13 +102,13 @@ class _chatState extends State<ChatScreen> {
       scrollController: ScrollController(),
       chatUsers: [
         ChatUser(
-          id: '${widget.user}',
-          name:'${name}',
-          profilePhoto: '${photo}',
+          id: '${widget.email}',
+          name:'${widget.name}',
+          profilePhoto: '${widget.photo}',
         ),
       ],
     );
-    _getmyAccountDetails();
+    // _getmyAccountDetails();
     _initializeMessageStream();
     auth = FirebaseAuth.instance;
   }
@@ -138,7 +117,7 @@ class _chatState extends State<ChatScreen> {
         .collection("accounts")
         .doc("${auth.currentUser?.email}")
         .collection("mess")
-        .doc(widget.user)
+        .doc(widget.email)
         .collection("chat")
         .orderBy('Time', descending: false)
         .snapshots()
@@ -153,7 +132,7 @@ class _chatState extends State<ChatScreen> {
           message: data['replyMessage'],
           messageType: MessageType.text,
           replyBy: data['sendby'],
-          replyTo: widget.user,
+          replyTo: widget.email,
           messageId: data['id'].toString(),
         ),
         sendBy: data['sendby'],
@@ -163,7 +142,7 @@ class _chatState extends State<ChatScreen> {
   @override
   void dispose() {
     _messageStream.drain();
-    _messageStream.drain<List<void>>();
+    // _messageStream.drain();
     super.dispose();
   }
   // List<Message> messages=[];
@@ -172,7 +151,7 @@ class _chatState extends State<ChatScreen> {
         .collection("accounts")
         .doc("${auth.currentUser?.email}")
         .collection("mess")
-        .doc(widget.user)
+        .doc(widget.email)
         .collection("chat")
         .orderBy('Time', descending: false)
         .snapshots()) {
@@ -188,7 +167,7 @@ class _chatState extends State<ChatScreen> {
             message: data['replyMessage'],
             messageType: MessageType.text,
             replyBy: data['sendby'],
-            replyTo: widget.user,
+            replyTo: widget.email,
             messageId: data['id'].toString(),
           ),
           sendBy: data['sendby'],
@@ -220,7 +199,7 @@ class _chatState extends State<ChatScreen> {
     //   scrollController: ScrollController(),
     //   chatUsers: [
     //     ChatUser(
-    //       id: '${widget.user}',
+    //       id: '${widget.email}',
     //       name:'${name}',
     //       profilePhoto: '${photo}',
     //     ),
@@ -247,7 +226,7 @@ class _chatState extends State<ChatScreen> {
                     messageLength.isEmpty ? messageLength = messageList : null;
                     updateCHECKInDocument(true);
                     // print(name);
-                    return  ChatWidget(currentUser, snapshot.data ?? [], _chatController, widget.user, getMessageStream(), name, photo);
+                    return  Chat_Widget(currentUser, snapshot.data ?? [], _chatController, widget.email, getMessageStream(), widget.name, widget.photo,widget.bio,widget.token);
                   }else{
                   messageList = snapshot.data!;getCHECKFromDocument();
                   messageLength.isEmpty ? messageLength = messageList : null;
@@ -285,11 +264,10 @@ class _chatState extends State<ChatScreen> {
                           }else{
                                 print("don't Added");
                               }
-                       }else print("nenene");
+                       }else print("nenen");
                         print("message added3");
                     } else print("lists equall");}
-
-                  return  ChatWidget(currentUser, snapshot.data ?? [], _chatController, widget.user, getMessageStream(), name, photo);
+                  return  Chat_Widget(currentUser, snapshot.data ?? [], _chatController, widget.email, getMessageStream(), widget.name,widget.photo,widget.bio,widget.token);
                 }
             }}
         )

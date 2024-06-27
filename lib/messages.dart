@@ -4,6 +4,7 @@ import 'package:example/auth/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:skeletons/skeletons.dart';
 import 'package:example/Settings/settings.dart';
+import 'package:example/pages/friend_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -14,8 +15,13 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:left_scroll_actions/cupertinoLeftScroll.dart';
 import 'package:left_scroll_actions/leftScroll.dart';
+import 'package:provider/provider.dart';
+import 'package:skeletons/skeletons.dart';
 
 import 'Constant/colors.dart';
+import 'models/SettingsProvider.dart';
+import 'models/theme.dart';
+import 'notification.dart';
 
 class messages extends StatefulWidget {
   final id;
@@ -47,22 +53,38 @@ class _messagesState extends State<messages> {
   }
   void search(String enteredKeyword) {
     if (enteredKeyword.isEmpty) {
-      return null;
     } else {
-      s_list = chats.where((user) =>user.toLowerCase().contains(enteredKeyword.toLowerCase()))
-          .toList();
+      setState(() {
+        s_list = chats.where((user) {
+          String name = user['name'].toString().toLowerCase();
+          String email = user['email'].toString().toLowerCase();
+          String keyword = enteredKeyword.toLowerCase();
+          return name.contains(keyword) || email.contains(keyword);
+        }).toList();
+      });
     }
-    setState(() {
-    });
   }
+
   List chats=[];
   List lmes=[];
-  void messagestream() async{
+
+  Stream<void> messagestream() async* {
+    await get_blockes(); // Ensure blocks are fetched before checking
     QuerySnapshot querySnapshot = await acc.get();
     querySnapshot.docs.forEach((doc) {
-      doc.id=='${auth.currentUser!.email}'?null:
-      chats.add(doc.id);
+      if (doc.id != '${auth.currentUser!.email}' &&
+          !blocks.any((block) => block['id'] == doc.id)) {
+        var data = doc.data() as Map<String, dynamic>;
+        chats.add({
+          "email": doc.id,
+          "name": data['name'],
+          "photo": data['photo'],
+          "bio": data['bio'],
+          "token": data['token']
+        });
+      }
     });
+    setState(() {}); // Update the UI after adding chats
   }
   delete_chat(var userDoc_id)async{
     var snapshots =await FirebaseFirestore.instance
@@ -80,26 +102,60 @@ class _messagesState extends State<messages> {
         .doc("${auth.currentUser?.email}")
         .collection("mess").doc(userDoc_id).delete();
   }
+  List<Map<String, dynamic>> blocks = [];
+  bool _isBlocked=false;
+  get_blockes()async*{
+    var data = await FirebaseFirestore.instance
+        .collection("accounts")
+        .doc("${auth.currentUser?.email}")
+        .collection("Blocks")
+        .get();
+    setState(() {
+      blocks = data.docs.map((doc) {
+        var blockData = doc.data();
+        blockData['id']= doc.id; // Add the document ID to the data map
+        return blockData;
+      }).toList();
+    });
+    // print(blocks['id'])
+  }
   @override
   void initState() {
     // TODO: implement initState
-    messagestream();
     super.initState();
+    messagestream();
+    get_blockes();
   }
   late QuerySnapshot chatSnapshot;
+ var notify= Notification_();
   Widget build(BuildContext context) {
+    var provide=Provider.of<SettingsProvider>(context);
+    var theme = provide.isDarkTheme ? DarkTheme() : LightTheme();
     return Scaffold(
+        resizeToAvoidBottomInset:true,
       body:Stack(
         children: [
           Container(
             height:150,
             decoration: BoxDecoration(
               // color: accentPurpleColor,
-                gradient: LinearGradient(colors: [accentPurple,pinkyy])
+                gradient: !provide.isDarkTheme?LinearGradient(
+                    // begin: Alignment.bottomCenter,end: Alignment.topCenter,
+                    colors: [
+                      // LIGHT MODE
+                      // accentPurple,pinkyy
+                      Color(0xff543863),
+                      Color(0xff4CBF87),
+                    ]):LinearGradient(tileMode: TileMode.mirror,
+                    colors: [
+                      // DARK MODE
+                      Color(0xff7B7794),
+                      Color(0xff231E73),
+                    ])
             ),
           ),
           Container(
-            decoration: BoxDecoration(color: Colors.white,
+            decoration: BoxDecoration(color:theme.backgroundhome,
                 borderRadius: BorderRadius.only(topRight: Radius.circular(30),topLeft: Radius.circular(30))),
             margin: EdgeInsets.only(top: 110),
             child: Column(
@@ -108,52 +164,95 @@ class _messagesState extends State<messages> {
                 Column(children: [
                   Container(
                     // height: 50,
-                    margin: EdgeInsets.all(10),
+                    margin: EdgeInsets.fromLTRB(10,10,10,5),
                     child: TextFormField(
+                      onTapOutside: (v){FocusManager.instance.primaryFocus?.unfocus();},
+                      style: TextStyle(color:theme.TextColor),
                       onChanged:(value) {
-                        print(value);
                         setState(() {
                           search(value.toString());
                         });
                       },
-                      decoration: InputDecoration( hintText: "Search",hintStyle: TextStyle(fontSize:20),
+                      decoration: InputDecoration( hintText: "Search",hintStyle: TextStyle(color:theme.TextColor,fontSize:20),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(25))
                       ),
                     ),
                   )
-                  ,ListView.builder( shrinkWrap: true,
-                    itemCount: s_list.length,
-                    itemBuilder: (context, index) {
-                      return InkWell(
-                          onTap:(){
-                            // Get.to(()=>ChatScreen(userDoc_id,userDoc_id.toString()));
-                            issearch=!issearch;
-                            print("////*${s_list[index]}");
-                            Get.to(()=>ChatScreen(s_list[index],s_list[index].toString()));
+                  ,ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: s_list.length,
+                          itemBuilder: (context, index) {
+                            var user = s_list[index];
+                            return InkWell(
+                              onTap: () {
+                                // // Toggle issearch and navigate to ChatScreen with the user's details
+                                // // print(isBlockedSnapshot.data?.data()?['isblocked']);
+                                // provide.set_isblock(_isBlocked);
+                                // print("========${provide.isblock}");
+                                issearch = !issearch;
+                                Get.to(() => ChatScreen(
+                                    s_list[index]['name'],
+                                    s_list[index]['email'],
+                                    s_list[index]['bio'],
+                                    s_list[index]['photo'],
+                                    s_list[index]['token'],
+                                ));
+                              },
+                              child: ListTile(
+                                leading: CircleAvatar(radius: 30,backgroundImage:
+                                NetworkImage(s_list[index]['photo']), // Use NetworkImage for URLs
+                                ),subtitle: Text(s_list[index]['bio'].toString(),style: TextStyle(color:theme.TextColor,fontSize:16)),
+                                title: Text(s_list[index]['name'].toString(),style: TextStyle(color:theme.TextColor,fontSize:19),
 
+                                ), // Ensure name is a string
+                              ),
+                            );
                           },
-                          child: ListTile(title:Text(s_list[index].toString()),));
-                    },),
-                ],):
+                        ),
+                      ],):
                 StreamBuilder<QuerySnapshot>(
                   stream: FirebaseFirestore.instance
                       .collection("accounts")
                       .doc("${auth.currentUser?.email}")
-                      .collection("mess")
+                      .collection("mess").orderBy('time', descending: true)
                       .snapshots(),
                   builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Container(
-                        child:CircularProgressIndicator()
+                      return Center(
+                          child: Column(
+                            children: [
+                              for(int i=0;i<chats.length;i++)
+                                SizedBox(width:600,height:74,
+                                  child: SkeletonListView(
+                                    item: SkeletonListTile(
+                                      verticalSpacing: 12,
+                                      leadingStyle: SkeletonAvatarStyle(
+                                          width: 64, height:64, shape: BoxShape.circle),
+                                      titleStyle:
+                                      SkeletonLineStyle(
+                                          height: 16,
+                                          minLength: 200,
+                                          randomLength: true,
+                                          borderRadius: BorderRadius.circular(12)),
+                                      subtitleStyle: SkeletonLineStyle(
+                                          height: 12,
+                                          maxLength: 200,
+                                          randomLength: true,
+                                          borderRadius: BorderRadius.circular(12)),
+                                      hasSubtitle: true,
+                                    ),
+                                  ),
+                                )
+                            ],
+                          )
                       );
-
                     }
                     if (snapshot.hasError) {
-                      print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeror");
                       return Text('Error: ${snapshot.error}');
                     }
                     if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                      return  Center(
+                      return
+                        Center(
                         child:  Column(
                           children: [
                             // Spacer(),
@@ -169,7 +268,7 @@ class _messagesState extends State<messages> {
 
                     // Fetching users from "mess" collection
                     List<DocumentSnapshot> userDocs = snapshot.data!.docs;
-                        return ListView.builder(
+                        return  ListView.builder(
                           shrinkWrap: true,
                           itemCount: userDocs.length,
                           itemBuilder: (context, index) {
@@ -184,7 +283,34 @@ class _messagesState extends State<messages> {
                                       nameSnapshot) {
                                 if (nameSnapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  return CircularProgressIndicator();
+                                   return Center(
+                                       child: Column(
+                                         children: [
+                                           for(int i=0;i<chats.length;i++)
+                                             SizedBox(width:600,height:74,
+                                               child: SkeletonListView(
+                                                 item: SkeletonListTile(
+                                                   verticalSpacing: 12,
+                                                   leadingStyle: SkeletonAvatarStyle(
+                                                       width: 64, height:64, shape: BoxShape.circle),
+                                                   titleStyle:
+                                                   SkeletonLineStyle(
+                                                       height: 16,
+                                                       minLength: 200,
+                                                       randomLength: true,
+                                                       borderRadius: BorderRadius.circular(12)),
+                                                   subtitleStyle: SkeletonLineStyle(
+                                                       height: 12,
+                                                       maxLength: 200,
+                                                       randomLength: true,
+                                                       borderRadius: BorderRadius.circular(12)),
+                                                   hasSubtitle: true,
+                                                 ),
+                                               ),
+                                             )
+                                         ],
+                                       )
+                                   );
                                 }
                                 if (nameSnapshot.hasError) {
                                   return Text('Error: ${nameSnapshot.error}');
@@ -195,9 +321,53 @@ class _messagesState extends State<messages> {
                                 }
 
                                 String userName =nameSnapshot.data!.get('name');
+                                String bio =nameSnapshot.data!.get('bio');
                                 var photo = nameSnapshot.data!.get('photo');
-
-                                return StreamBuilder<QuerySnapshot>(
+                                var token = nameSnapshot.data!.get('token');
+                             return StreamBuilder(stream:FirebaseFirestore.instance
+                                            .collection("accounts")
+                                            .doc(auth.currentUser?.email)
+                                            .collection("mess")
+                                            .doc(userDoc.id)
+                                            .snapshots(),
+                                        builder: (BuildContext context,AsyncSnapshot< DocumentSnapshot< Map<String, dynamic>>>isBlockedSnapshot) {
+                                          if (isBlockedSnapshot.connectionState ==ConnectionState.waiting) {
+                                            return Center(
+                                                child: Column(
+                                                  children: [
+                                                    for(int i=0;i<chats.length;i++)
+                                                      SizedBox(width:600,height:74,
+                                                        child: SkeletonListView(
+                                                          item: SkeletonListTile(
+                                                            verticalSpacing: 12,
+                                                            leadingStyle: SkeletonAvatarStyle(
+                                                                width: 64, height:64, shape: BoxShape.circle),
+                                                            titleStyle:
+                                                            SkeletonLineStyle(
+                                                                height: 16,
+                                                                minLength: 200,
+                                                                randomLength: true,
+                                                                borderRadius: BorderRadius.circular(12)),
+                                                            subtitleStyle: SkeletonLineStyle(
+                                                                height: 12,
+                                                                maxLength: 200,
+                                                                randomLength: true,
+                                                                borderRadius: BorderRadius.circular(12)),
+                                                            hasSubtitle: true,
+                                                          ),
+                                                        ),
+                                                      )
+                                                  ],
+                                                )
+                                            );
+                                          }
+                                          if (isBlockedSnapshot.hasError) {
+                                            return Text(
+                                                'Error: ${isBlockedSnapshot.error}');
+                                          }
+                                          // print(object)
+                                        _isBlocked = isBlockedSnapshot.data?.data()?['isblocked'];
+                                          return StreamBuilder<QuerySnapshot>(
                                   stream: FirebaseFirestore.instance
                                       .collection("accounts")
                                       .doc(auth.currentUser?.email)
@@ -205,14 +375,40 @@ class _messagesState extends State<messages> {
                                       .doc(userDoc.id)
                                       .collection("chat")
                                       .orderBy('Time', descending: true)
-                                      .limit(1)
                                       .snapshots(),
                                   builder: (BuildContext context,
                                       AsyncSnapshot<QuerySnapshot>
                                           chatSnapshot) {
                                     if (chatSnapshot.connectionState ==
                                         ConnectionState.waiting) {
-                                      return const CircularProgressIndicator();
+                                      return Center(
+                                          child: Column(
+                                            children: [
+                                              for(int i=0;i<chats.length;i++)
+                                                SizedBox(width:600,height:74,
+                                                  child: SkeletonListView(
+                                                    item: SkeletonListTile(
+                                                      verticalSpacing: 12,
+                                                      leadingStyle: SkeletonAvatarStyle(
+                                                          width: 64, height:64, shape: BoxShape.circle),
+                                                      titleStyle:
+                                                      SkeletonLineStyle(
+                                                          height: 16,
+                                                          minLength: 200,
+                                                          randomLength: true,
+                                                          borderRadius: BorderRadius.circular(12)),
+                                                      subtitleStyle: SkeletonLineStyle(
+                                                          height: 12,
+                                                          maxLength: 200,
+                                                          randomLength: true,
+                                                          borderRadius: BorderRadius.circular(12)),
+                                                      hasSubtitle: true,
+                                                    ),
+                                                  ),
+                                                )
+                                            ],
+                                          )
+                                      );
                                     }
                                     if (chatSnapshot.hasError) {
                                       return Text(
@@ -234,8 +430,7 @@ class _messagesState extends State<messages> {
                                       );
                                     }
                                     // Fetching the last message document
-                                    DocumentSnapshot lastMessageDoc =
-                                        chatSnapshot.data!.docs.first;
+                                    DocumentSnapshot lastMessageDoc =chatSnapshot.data!.docs.first;
                                     userDoc_id=userDoc.id;
                                     username=userName;
                                     Photo=photo;
@@ -243,20 +438,11 @@ class _messagesState extends State<messages> {
                                     // Example: lastMessageDoc['message'], lastMessageDoc['Time'], etc.
                     return   CupertinoLeftScroll(
                       buttons: <Widget>[
-                        // LeftScrollItem(
-                        //   text: 'edit',
-                        //   // icon:CupertinoIcons.delete_solid,
-                        //   color: Colors.orange,
-                        //   onTap: () {
-                        //     print('edit');
-                        //   },
-                        // ),
                         LeftScrollItem(
-                          text: 'delete',
-                          // icon: CupertinoIcons.delete,
+                          text: 'Delete',icon:Icons.delete,
                           color: Colors.red,
                           onTap: ()async{
-                            Get.defaultDialog(content:null,
+                            Get.defaultDialog(
                                 textConfirm:"Delete",title:"Permanetly delete chat?",
                                 onCancel: (){},
                                 onConfirm:()async{
@@ -266,28 +452,36 @@ class _messagesState extends State<messages> {
                         ),
                       ],
                       child: InkWell(onTap: () async{
-                            Get.to(()=>ChatScreen(userDoc.id,userDoc.id.toString()));
+                            print(_isBlocked);
+                            print(isBlockedSnapshot.data?.data()?['isblocked']);
+                            provide.set_isblock(isBlockedSnapshot.data?.data()?['isblocked']);
+                            print("========${provide.isblock}");
+                            Get.to(()=>ChatScreen(userName,userDoc.id,bio,photo,token));
                             },child:Container(padding:const  EdgeInsets.fromLTRB(10,2,10,20),
                                   child: Row(
                                     children: [
-                                       CircleAvatar(radius:30,backgroundImage: NetworkImage("$photo"),),
+                                       InkWell(
+                                           onTap:(){
+                                             Get.to(()=>friend_profile(userName, userDoc.id, bio, photo));
+                                           },
+                                           child: CircleAvatar(radius:30,backgroundImage: NetworkImage("$photo"),)),
                                       const SizedBox(width: 10,),
                                       Column(crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text("${userName}",style: const TextStyle(fontWeight: FontWeight.bold,fontSize:18),),
+                                          Text("${userName}",style:TextStyle(color:theme.textFieldTextColor,fontWeight: FontWeight.bold,fontSize:18),),
                                           lastMessageDoc['sendby']=='${auth.currentUser!.email}'
-                                              ?lastMessageDoc['istext']?Text("You: ${lastMessageDoc['text']}"):Row(children: [
-                                                Text("You: "),Icon(CupertinoIcons.camera_fill,size:18,),Text(" Photo")
+                                              ?lastMessageDoc['istext']?Text("You: ${lastMessageDoc['text']}",style:TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45,),):Row(children: [
+                                                Text("You: ",style:TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45),),Icon(CupertinoIcons.camera_fill,size:18,color:theme.TextColor,),Text(" Photo",style: TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45),)
                                           ],)
-                                              :lastMessageDoc['istext']?Text(lastMessageDoc['text']):Row(children: [
-                                            Icon(CupertinoIcons.camera_fill,size:18,),Text(" Photo")
+                                              :lastMessageDoc['istext']?Text(lastMessageDoc['text'],style:TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45),):Row(children: [
+                                            Icon(CupertinoIcons.camera_fill,size:18,color:theme.TextColor,),Text("  Photo",style: TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45),)
                                           ],),
                                         ], ),
                                      Spacer(),
                                       Column(crossAxisAlignment: CrossAxisAlignment.end,mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text("${convertTime(lastMessageDoc['Time'])}",style: const TextStyle(fontWeight: FontWeight.bold),),
-                                          const CircleAvatar(child:Text("2",style:const TextStyle(fontSize:14),),radius: 10,backgroundColor:Color(0xffEE5366),),
+                                          Text("${convertTime(lastMessageDoc['Time'])}",style:TextStyle(color:theme.textFieldTextColor,fontWeight: FontWeight.bold),),
+                                          // const CircleAvatar(child:Text("2",style:const TextStyle(fontSize:14),),radius: 10,backgroundColor:Color(0xffEE5366),),
                                         ], ),
                                       const SizedBox(width:6,)
                                     ],
@@ -301,7 +495,7 @@ class _messagesState extends State<messages> {
                       },
                     );
                   },
-                );}),
+                );});}),
               ],
             ),
           ),
@@ -312,10 +506,6 @@ class _messagesState extends State<messages> {
                 Container(decoration: BoxDecoration(color: Colors.white54,
                     borderRadius: BorderRadius.all(Radius.circular(20))),
                   child: IconButton(onPressed: () {
-                    // print("${auth.currentUser!.photoURL}");
-                   //  auth.currentUser!.updateProfile(photoURL:
-                   //      "https://firebasestorage.googleapis.com/v0/b/base-8c0bc.appspot.com/o/files%2F245471000000037.jpg?alt=media&token=bcf1b423-fbab-4673-92df-c8307e59c930"
-                   // ,displayName: "Doaa");
                     Get.to(()=>settings("${auth.currentUser!.displayName}","${auth.currentUser!.photoURL}"));
                   }, icon:Icon(Icons.settings,color: Colors.white,)),
                 ),
