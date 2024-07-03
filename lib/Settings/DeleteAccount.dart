@@ -36,7 +36,6 @@ class _DeleteAccountState extends State<DeleteAccount> {
   final auth = FirebaseAuth.instance;
  var password,obscure = true;
   var pass = TextEditingController();
-
 check_password()async{
 
     if(pass.text.isEmpty){
@@ -117,7 +116,9 @@ check_password()async{
     }
   }
   Widget build(BuildContext context) {
-    var v=Provider.of<SettingsProvider>(context);
+  var Width=MediaQuery.of(context).size.width;
+
+  var v=Provider.of<SettingsProvider>(context);
     var theme = v.isDarkTheme ? DarkTheme() : LightTheme();
     return Scaffold(
       backgroundColor: theme.backgroundhome,resizeToAvoidBottomInset: false,
@@ -160,6 +161,7 @@ check_password()async{
                 style: TextStyle(fontSize: 18, color: v.isDarkTheme?Colors.white60:Colors.black54,fontWeight: FontWeight.w500),
               ),
               SizedBox(height:10,),
+              SizedBox(height:10,),
               TextFormField(
                 onTapOutside: (v){FocusManager.instance.primaryFocus?.unfocus();},
                 controller: pass,
@@ -184,7 +186,7 @@ check_password()async{
                 ,text: "Delete account",height: 50.0,width:200.0,)),
 
       ],
-          ),
+          )
         )
 
         );

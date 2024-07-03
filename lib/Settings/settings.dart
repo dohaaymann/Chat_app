@@ -4,6 +4,7 @@ import 'package:example/Settings/Blocked.dart';
 import 'package:example/Settings/DeleteAccount.dart';
 import 'package:example/auth/auth.dart';
 import 'package:example/chatscreen.dart';
+import 'package:example/models/sql.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
@@ -12,6 +13,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import '../Constant/colors.dart';
+import '../face.dart';
 import '../messages.dart';
 import '../models/SettingsProvider.dart';
 import '../models/theme.dart';
@@ -34,7 +36,7 @@ class _settingsState extends State<settings> {
   late String name;
   bool notifyEnable = true;
   bool wait = false;
-
+var sql=SQLDB();
   @override
   void initState() {
     super.initState();
@@ -178,6 +180,7 @@ class _settingsState extends State<settings> {
                               Switch(
                                 value: provider.isDarkTheme,
                                 onChanged: (value) async {
+                                   // sql.update_isdark(value);
                                   provider.setMode(value);
                                   setState(() {});
                                 },
@@ -192,7 +195,8 @@ class _settingsState extends State<settings> {
                             InkWell(
                               onTap: () {
                                 if (options[i] == 'Blocked Users') {
-                                  Get.to(() => Blocked());
+                                  // Get.to(() => Blocked());
+                                  // Get.to(() => chat_('farah@mail.com',));
                                 } else {
                                   Get.to(() => DeleteAccount(name, auth.currentUser!.email!, photo));
                                 }
@@ -222,15 +226,17 @@ class _settingsState extends State<settings> {
                                       setState(() {
                                         wait = !wait;
                                       });
-                                      FirebaseFirestore.instance
+                                  Future.delayed(const Duration(seconds:3), () {
+                                  FirebaseFirestore.instance
                                           .collection('accounts')
                                           .doc(auth.currentUser!.email)
                                           .update({
                                         'token': ''
                                       }).then((value) async {
                                         await auth.signOut();
-                                      });
-                                      Get.to(() => auth_p());
+                                        Get.to(() => auth_p());
+
+                                      });});
                                     },
                                     child: Container(
                                       height: 50,
@@ -267,7 +273,8 @@ class _settingsState extends State<settings> {
           ),
         ],
       )
-          : CircularProgressIndicator(),
+          : Center(child: Container(color: Colors.transparent,
+          child: CircularProgressIndicator())),
     );
   }
 }

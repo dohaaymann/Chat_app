@@ -352,9 +352,11 @@ class _edit_profileState extends State<edit_profile> {
                     setState(() {
                       waitt = !waitt;
                     });
-                    await auth.currentUser!.updatePassword(_pass.text);
+                    print("d1");
+                    await auth.currentUser!.updatePassword(_pass.text).then((value) => print('d2'),);
                     await _pickFile(result);
-                    Future.delayed(const Duration(seconds: 5), () {
+                    Future.delayed(const Duration(seconds:3), () {
+                      print("donnnnnnnnnnnnnnnne");
                       if (mounted) {
                         Fluttertoast.showToast(
                           msg: "           Saved           ",

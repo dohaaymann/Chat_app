@@ -5,6 +5,7 @@ import 'package:example/chatscreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:chatview/chatview.dart';
+import 'package:get/get.dart';
 class forward_to extends StatefulWidget {
   forward_to({
     required this.message,
@@ -164,6 +165,7 @@ class _ForwardToState extends State<forward_to> {
                         onPressed: selectedUsers().isEmpty
                             ? null
                             : () async {
+                          Navigator.of(context).pop();
                           await forwardFunction(
                             widget.message.message,
                             widget.message.replyMessage,
@@ -192,6 +194,7 @@ class _ForwardToState extends State<forward_to> {
                     ),
                     margin: EdgeInsets.all(10),
                     child: TextFormField(
+                      onTapOutside: (event) =>FocusManager.instance.primaryFocus?.unfocus(),
                       onChanged: (value) {
                         setState(() {
                           isSearch = value.isNotEmpty;

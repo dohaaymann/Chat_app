@@ -16,6 +16,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'models/sql.dart';
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'high_importance_channel', // id
   'High Importance Notifications', // title
@@ -38,48 +39,37 @@ void main() async{
   await FirebaseAppCheck.instance.activate(
    androidProvider: AndroidProvider.playIntegrity, // required for web
   );
-  await FirebaseMessaging.instance.setAutoInitEnabled(true);
 
   fcmToken = await FirebaseMessaging.instance.getToken();
   print("FCMToken \n$fcmToken");
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool notificationsEnabled = prefs.getBool('notificationsEnabled') ?? true;
+  print(notificationsEnabled);
+   if(notificationsEnabled){
+     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+       print('Got a message whilst in the foreground!');
+       print('Message data: ${message.data}');
 
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  await send_notification();
+       if (message.notification != null) {
+         RemoteNotification notification = message.notification!;
+         Get.snackbar("${notification.title ?? 'No Title'}","${notification.body ?? 'No Body'}",);
+         print('Message also contained a notification:');
+         print('Title: ${notification.title}');
+         print('Body: ${notification.body}');
+       }
+     });
+     await FirebaseMessaging.instance.setAutoInitEnabled(true);
+
+     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+     await send_notification();
+   }
+   var sql=SQLDB();
+   // sql.insert(false);
   await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
   runApp(ChangeNotifierProvider(create: (context) =>SettingsProvider(),child:const MyApp(),));
 }
-listen_to_notification(){}
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-// void showFlutterNotification(RemoteNotification notification) {
-//   var androidPlatformChannelSpecifics = AndroidNotificationDetails(
-//     channel.id,
-//     channel.name,
-//     importance: Importance.high,
-//     priority: Priority.high,
-//     icon: 'launch_background',
-//   );
-//
-//   var platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
-//
-//   flutterLocalNotificationsPlugin.show(
-//     notification.hashCode,
-//     notification.title,
-//     notification.body,
-//     platformChannelSpecifics,
-//   );
-// }
 
-
-// void setupForegroundNotifications() {
-//   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-//     RemoteNotification? notification = message.notification;
-//     AndroidNotification? android = message.notification?.android;
-//
-//     if (notification != null && android != null) {
-//       showFlutterNotification(notification);
-//     }
-//   });
-// }
 send_notification()async{
   FirebaseMessaging messaging = FirebaseMessaging.instance;
   NotificationSettings settings = await messaging.requestPermission(
@@ -136,13 +126,6 @@ class _MyHomePageState extends State<MyHomePage> {
   var email,pass;
   var showpass=true;
   final _auth=FirebaseAuth.instance;
-
-get_data_sharedpref()async{
-  var provide=Provider.of<SettingsProvider>(context);
-  SharedPreferences shared_pref=await SharedPreferences.getInstance();
-  var x=shared_pref.getBool("isDark");
-  provide.change_theme(x);
-}
   @override
 
   void initState() {

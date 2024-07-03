@@ -4,6 +4,7 @@ import 'package:example/auth/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:skeletons/skeletons.dart';
 import 'package:example/Settings/settings.dart';
+import 'package:example/face.dart';
 import 'package:example/pages/friend_profile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -20,6 +21,7 @@ import 'package:skeletons/skeletons.dart';
 
 import 'Constant/colors.dart';
 import 'models/SettingsProvider.dart';
+import 'models/sql.dart';
 import 'models/theme.dart';
 import 'notification.dart';
 
@@ -33,19 +35,33 @@ class messages extends StatefulWidget {
 var auth=FirebaseAuth.instance;
 var userDoc_id,username,Photo;
 var acc=FirebaseFirestore.instance.collection("accounts");
-// var lmessage=FirebaseFirestore.instance
-//     .collection("accounts")
-//     .doc("${auth.currentUser?.email}")
-//     .collection("mess")
-//     .doc("doha@gmail.com")
-//     .collection("chat").orderBy('Time',descending: false);
-// stream: .snapshots(),
+ check_ifblocked(String email) async {
+  try {
+    DocumentSnapshot<Map<String, dynamic>> documentSnapshot = await FirebaseFirestore.instance
+        .collection("accounts")
+        .doc(email)
+        .collection("mess")
+        .doc(FirebaseAuth.instance.currentUser!.email!)
+        .get();
 
+    if (documentSnapshot.exists) {
+      return documentSnapshot.data()?['isblocked'] ?? false;
+    } else {
+      print("Document does not exist");
+      return false;
+    }
+  } catch (e) {
+    print("Error getting document: $e");
+    return null;
+  }
+}
 
 class _messagesState extends State<messages> {
   @override
   bool visable=false,issearch=false;
   List s_list=[];
+  var wait=false;
+  var sql=SQLDB();
   convertTime(var time){
     DateTime dateTime = time.toDate();
     String formattedTime = DateFormat('HH:mm').format(dateTime);
@@ -68,7 +84,7 @@ class _messagesState extends State<messages> {
   List chats=[];
   List lmes=[];
 
-  Stream<void> messagestream() async* {
+   messagestream() async{
     await get_blockes(); // Ensure blocks are fetched before checking
     QuerySnapshot querySnapshot = await acc.get();
     querySnapshot.docs.forEach((doc) {
@@ -131,8 +147,9 @@ class _messagesState extends State<messages> {
   Widget build(BuildContext context) {
     var provide=Provider.of<SettingsProvider>(context);
     var theme = provide.isDarkTheme ? DarkTheme() : LightTheme();
+    var Width=MediaQuery.of(context).size.width;
     return Scaffold(
-        resizeToAvoidBottomInset:true,
+        resizeToAvoidBottomInset:false,
       body:Stack(
         children: [
           Container(
@@ -184,11 +201,18 @@ class _messagesState extends State<messages> {
                           itemBuilder: (context, index) {
                             var user = s_list[index];
                             return InkWell(
-                              onTap: () {
+                              onTap: ()async{
                                 // // Toggle issearch and navigate to ChatScreen with the user's details
                                 // // print(isBlockedSnapshot.data?.data()?['isblocked']);
                                 // provide.set_isblock(_isBlocked);
                                 // print("========${provide.isblock}");
+                                print(_isBlocked);
+                                // print(isBlockedSnapshot.data?.data()?['isblocked']);
+                                // await sql.update_isblock(isBlockedSnapshot.data?.data()?['isblocked']);
+                                // provide.set_isblock(isBlockedSnapshot.data?.data()?['isblocked']);
+                                // print("========${provide.isblock}");
+                                await check_ifblocked(s_list[index]['email'])?provide.set_blocks('Blocked'):provide.set_blocks('none');
+
                                 issearch = !issearch;
                                 Get.to(() => ChatScreen(
                                     s_list[index]['name'],
@@ -443,51 +467,93 @@ class _messagesState extends State<messages> {
                           color: Colors.red,
                           onTap: ()async{
                             Get.defaultDialog(
-                                textConfirm:"Delete",title:"Permanetly delete chat?",
-                                onCancel: (){},
-                                onConfirm:()async{
-                                  await delete_chat(userDoc.id);
-                                },);
-                          },
+                                buttonColor:theme.buttonColor,
+                              title: "Delete Chat",
+                              textConfirm: "Delete",
+                              textCancel: "Cancel",
+                              onCancel: () {},
+                                cancel: null,
+                                confirm: wait?CircularProgressIndicator():null,
+                              onConfirm: () async {
+                                  setState(() {
+                                    wait=!wait;
+                                  });
+                             Future.delayed(const Duration(seconds:3), () {
+                               setState(() {
+                                 wait=!wait;
+                               });
+                               Navigator.of(context).pop();
+                             });
+                              await delete_chat(userDoc.id);
+
+                              },
+                              content:Text("Permanently delete chat?")
+                              // Removes default content
+                            );
+
+                          }
                         ),
                       ],
                       child: InkWell(onTap: () async{
                             print(_isBlocked);
                             print(isBlockedSnapshot.data?.data()?['isblocked']);
+                            await sql.update_isblock(isBlockedSnapshot.data?.data()?['isblocked']);
                             provide.set_isblock(isBlockedSnapshot.data?.data()?['isblocked']);
-                            print("========${provide.isblock}");
-                            Get.to(()=>ChatScreen(userName,userDoc.id,bio,photo,token));
-                            },child:Container(padding:const  EdgeInsets.fromLTRB(10,2,10,20),
+                            // print("========${provide.isblock}");
+                            await check_ifblocked(userDoc.id)?provide.set_blocks('Blocked'):isBlockedSnapshot.data?.data()?['isblocked']?provide.set_blocks('Blockhim'):provide.set_blocks('none');
+                            // Get.to(()=>ChatScreen(userName,userDoc.id,bio,photo,token));
+                            Get.to(()=>chat_(userName,userDoc.id,bio,photo,token));
+                            // Get.to(()=>chat_(userName,userDoc.id));
+                            },child:Container(
+                        padding:const  EdgeInsets.fromLTRB(10,2,10,20),
                                   child: Row(
                                     children: [
                                        InkWell(
                                            onTap:(){
-                                             Get.to(()=>friend_profile(userName, userDoc.id, bio, photo));
+                                             Get.to(()=>friend_profile(userName, userDoc.id, bio, photo,isBlockedSnapshot.data?.data()?['isblocked']));
                                            },
                                            child: CircleAvatar(radius:30,backgroundImage: NetworkImage("$photo"),)),
                                       const SizedBox(width: 10,),
-                                      Column(crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text("${userName}",style:TextStyle(color:theme.textFieldTextColor,fontWeight: FontWeight.bold,fontSize:18),),
-                                          lastMessageDoc['sendby']=='${auth.currentUser!.email}'
-                                              ?lastMessageDoc['istext']?Text("You: ${lastMessageDoc['text']}",style:TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45,),):Row(children: [
-                                                Text("You: ",style:TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45),),Icon(CupertinoIcons.camera_fill,size:18,color:theme.TextColor,),Text(" Photo",style: TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45),)
-                                          ],)
-                                              :lastMessageDoc['istext']?Text(lastMessageDoc['text'],style:TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45),):Row(children: [
-                                            Icon(CupertinoIcons.camera_fill,size:18,color:theme.TextColor,),Text("  Photo",style: TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45),)
-                                          ],),
-                                        ], ),
-                                     Spacer(),
-                                      Column(crossAxisAlignment: CrossAxisAlignment.end,mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text("${convertTime(lastMessageDoc['Time'])}",style:TextStyle(color:theme.textFieldTextColor,fontWeight: FontWeight.bold),),
-                                          // const CircleAvatar(child:Text("2",style:const TextStyle(fontSize:14),),radius: 10,backgroundColor:Color(0xffEE5366),),
-                                        ], ),
-                                      const SizedBox(width:6,)
+                                      Container(
+                                        width:Width-(80+50),
+                                        child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text("${userName}",style:TextStyle(color:theme.textFieldTextColor,fontWeight: FontWeight.bold,fontSize:18),),
+                                            lastMessageDoc['sendby']=='${auth.currentUser!.email}'
+                                                ?lastMessageDoc['istext']?SizedBox(
+                                              width: Width-(80+50),
+                                                  child: Text("You: ${lastMessageDoc['text']}",
+                                                     overflow: TextOverflow.fade,
+                                                     maxLines:1,
+                                                      softWrap: false,
+                                                     style:TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45,),),
+                                                )
+                                                :Row(children: [
+                                                  Text("You: ",style:TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45),),
+                                                 Icon(CupertinoIcons.camera_fill,size:18,color:theme.TextColor,),
+                                              Text(" Photo",style: TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45),)
+                                            ],)
+                                                :lastMessageDoc['istext']?Text(lastMessageDoc['text'],
+                                              overflow: TextOverflow.fade,
+                                              maxLines:1,
+                                              softWrap: false,style:TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45),):Row(children: [
+                                              Icon(CupertinoIcons.camera_fill,size:18,color:theme.TextColor,),Text("  Photo",style: TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45),)
+                                            ],),
+                                          ], ),
+                                      ),
+                                      Container(width:40,
+                                        child: Column(crossAxisAlignment: CrossAxisAlignment.end,mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text("${convertTime(lastMessageDoc['Time'])}",style:TextStyle(color:theme.textFieldTextColor,fontWeight: FontWeight.bold),),
+
+                                             CircleAvatar(child:Text("",style:const TextStyle(fontSize:14),),radius: 10,backgroundColor:theme.backgroundhome),
+                                          ], ),
+                                      ),
+                                      // const SizedBox(width:10,),
+
                                     ],
                                   ),
-
-                                )
+                                ),
                             ),
                     );
                           },
@@ -525,4 +591,7 @@ class _messagesState extends State<messages> {
       )
     );
   }
+}
+header(){
+
 }

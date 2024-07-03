@@ -7,7 +7,7 @@ class SettingsProvider with ChangeNotifier {
   bool NotificationsEnabled = true;
   bool get notificationsEnabled => NotificationsEnabled;
 
-  var isDarkTheme=false,isblock;
+  var isDarkTheme=false,block,isblock;
   SettingsProvider() {
     _loadSettings();
   }
@@ -20,7 +20,6 @@ class SettingsProvider with ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     NotificationsEnabled = prefs.getBool('notificationsEnabled') ?? true;
     isDarkTheme = prefs.getBool('isDark') ?? false;
-    isblock = prefs.getBool('isblock') ?? false;
     notifyListeners();
   }
 
@@ -32,8 +31,10 @@ class SettingsProvider with ChangeNotifier {
   }
   void set_isblock(bool value) async {
     isblock = value;  // Corrected this line to update isblock instead of _notificationsEnabled
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isblock', value);
+    notifyListeners();
+  }
+  void set_blocks(var value) async {
+    block = value;  // Corrected this line to update isblock instead of _notificationsEnabled
     notifyListeners();
   }
   void setMode(bool value) async {

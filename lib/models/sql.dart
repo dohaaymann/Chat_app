@@ -1,114 +1,114 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-class SQLDB{
+
+class SQLDB {
   static Database? _db;
-  Future<Database?> get db async{
-    if(_db==null){
-      _db=await initialdb();
+
+  Future<Database?> get db async {
+    if (_db == null) {
+      _db = await initialdb();
       return _db;
-    }else{
+    } else {
       return _db;
     }
   }
+
   var path;
-  initialdb()async{
-    // sqfliteFfiInit();
-    var database=await getDatabasesPath();
-    // path=join(database,"chatbot.db");
-    path=join(database,"check.db");
-    var mydb=await openDatabase(path,onCreate: create,version:2,onUpgrade: upgrade);
+
+  initialdb() async {
+    var database = await getDatabasesPath();
+    path = join(database, "check.db");
+    var mydb = await openDatabase(path, onCreate: create, version: 3, onUpgrade: upgrade);
     print("database created");
     return mydb;
   }
-  upgrade(Database db,int oldversion,int newversion)async{
+
+  upgrade(Database db, int oldversion, int newversion) async {
     await db.execute('''
-     CREATE TABLE 'checklist'(
-     'exsit' BOOLEAN
+      CREATE TABLE IF NOT EXISTS databasee (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        isBlock INTEGER DEFAULT 0
       )
-     ''');
-    // inserttable();
+    ''');
     print("CREATE WAS DONE");
     print("------------ upgrade -----------");
   }
-  create(Database db,int version)async{
-    await db.execute('''
-     CREATE TABLE 'chatbot'(
-     'content' TEXT,
-     'time' TEXT,
-     'role' TEXT
-      )
-     ''');
-    // inserttable();
-    print("CREATE WAS DONE");
 
+  create(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS databasee (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        isBlock INTEGER DEFAULT 0
+      )
+    ''');
+    print("CREATE WAS DONE");
   }
-  insert(var content)async{
-    Database? mydb=await db;
-    // var res= await mydb?.insert('chatbot', {
-    //   "content":content,
-    //   'time':time,
-    //   'role':role,
-    // });
-    var res= await mydb?.insert('checklist', {
-      "exist":content,
+
+  Future<int?> insert(bool isblock) async {
+    Database? mydb = await db;
+    var res = await mydb?.insert('databasee', {
+      'isBlock': isblock ? 1 : 0
     });
     print("inserted WAS DONE");
     return res;
   }
-  read(String table)async{
-    Database? mydb=await db;
-    var res= await mydb?.query(table);
+
+  Future<List<Map<String, dynamic>>?> read(String table) async {
+    Database? mydb = await db;
+    var res = await mydb?.query(table);
     print("readdata WAS DONE");
-    return res;
-  }readbyid(int id)async{
-    Database? mydb=await db;
-    var res= await mydb?.rawQuery("SELECT * FROM chatbot WHERE id=$id");
-    print("readdata WAS DONE");
-    return res;
-  }selectimg(int id)async{
-    Database? mydb=await db;
-    var res= await mydb?.rawQuery("SELECT image FROM chatbot WHERE id=$id");
-    print("readdata WAS DONE");
-    return res;
-  }selectuser()async{
-    Database? mydb=await db;
-    var res= await mydb?.rawQuery("SELECT user FROM chatbot");
-    print("readdata WAS DONE");
-    return res;
-  }selectphone()async{
-    Database? mydb=await db;
-    var res= await mydb?.rawQuery("SELECT phone FROM chatbot");
-    print("seleced WAS DONE");
-    return res;
-  }selectstored()async{
-    Database? mydb=await db;
-    var res= await mydb?.rawQuery("SELECT exsit FROM checklist");
-    print("seleced WAS DONE");
     return res;
   }
-  update(var value)async{
-    Database? mydb=await db;
-    var res= await mydb?.update('checklist',value );
-    // var res= await mydb?.rawUpdate(sql);
+
+  Future<List<Map<String, dynamic>>?> readbyid(int id) async {
+    Database? mydb = await db;
+    var res = await mydb?.rawQuery("SELECT * FROM databasee WHERE id=$id");
+    print("readdata WAS DONE");
+    return res;
+  }
+
+   selectisblock() async {
+    Database? mydb = await db;
+    var res = await mydb?.rawQuery("SELECT isBlock FROM databasee");
+    print("readdata WAS DONE");
+    return res;
+  }
+
+
+  Future<int?> update_isblock(bool value) async {
+    Database? mydb = await db;
+    // Check if any record exists
+    var count = Sqflite.firstIntValue(
+        await mydb!.rawQuery('SELECT COUNT(*) FROM databasee'));
+    if (count == 0) {
+      // Insert if no record exists
+      var res = await mydb.insert('databasee', {
+        'isBlock': value ? 1 : 0,
+      });
+      print("inserted WAS DONE");
+      return res;
+    } else {
+      // Update if record exists
+      var res = await mydb.update(
+          'databasee',
+          {'isBlock': value ? 1 : 0},
+          where: 'id = ?',
+          whereArgs: [1] // Update this to match the correct record
+      );
+      print("updated WAS DONE");
+      return res;
+    }
+  }
+
+  Future<int?> update_isnotify(bool value) async {
+    Database? mydb = await db;
+    var res = await mydb?.update(
+        'databasee',
+        {'notificationsEnabled': value ? 1 : 0},
+        where: 'id = ?',
+        whereArgs: [1] // Update this to match the correct record
+    );
     print("updated WAS DONE");
     return res;
-  } updatetoall(var value)async{
-    Database? mydb=await db;
-    var res= await mydb?.update('chatbot',value,);
-    // var res= await mydb?.rawUpdate(sql);
-    print("updated WAS DONE");
-    return res;
-  }
-  delete(int id)async{
-    Database? mydb=await db;
-    var res= await mydb?.delete("chatbot",where: "id=$id");
-    print("DELETE WAS DONE");
-    return res;
-  }
-  mydeletedatabase()async{
-    var database=await getDatabasesPath();
-    path=join(database,"untitle3.db");
-    await deleteDatabase(path);
-    print("database deleted");
   }
 }

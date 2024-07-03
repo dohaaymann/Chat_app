@@ -20,21 +20,14 @@ class _signupState extends State<signup> {
   final sname = TextEditingController();
   final semail = TextEditingController();
   final spass = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   final database _data = database();
   bool waitt = true;
   var auth = FirebaseAuth.instance;
   final fcmToken = FirebaseMessaging.instance.getToken();
 
   Future<void> signup() async {
-    if (semail.text.isEmpty || spass.text.isEmpty || sname.text.isEmpty) {
-      print("Empty fields");
-      if (mounted) {
-        Get.snackbar("Error", "Please fill out the fields",
-            backgroundColor: Colors.red, colorText: Colors.white);
-      }
-      return;
-    }
-
+    if (_formKey.currentState!.validate()) {
     try {
       var user = await auth.createUserWithEmailAndPassword(
         email: semail.text,
@@ -77,7 +70,7 @@ class _signupState extends State<signup> {
             backgroundColor: Colors.red, colorText: Colors.white);
       }
     }
-  }
+  }}
 
   @override
   Widget build(BuildContext context) {
@@ -109,32 +102,35 @@ class _signupState extends State<signup> {
           ),
         ),
         SizedBox(height: 80),
-        Column(
-          children: [
-            Container(
-              margin: EdgeInsets.only(left: 10, right: 10),
-              child: customtext("Name", sname),
-            ),
-            Container(
-              margin: EdgeInsets.only(top: 30, left: 10, right: 10),
-              child: customtext("Email", semail),
-            ),
-            Container(
-              margin: EdgeInsets.only(top: 30, left: 10, right: 10),
-              child: customtext("Password", spass),
-            ),
-            SizedBox(height: 20),
-            waitt
-                ? CustomButton(
-              text: "Signup",
-              onTap: () async {
-                await signup();
-              },
-              height: 50.0,
-              width: 150.0,
-            )
-                : CircularProgressIndicator(),
-          ],
+        Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Container(
+                margin: EdgeInsets.only(left: 10, right: 10),
+                child: customtext("Name", sname),
+              ),
+              Container(
+                margin: EdgeInsets.only(top: 30, left: 10, right: 10),
+                child: customtext("Email", semail),
+              ),
+              Container(
+                margin: EdgeInsets.only(top: 30, left: 10, right: 10),
+                child: customtext("Password", spass),
+              ),
+              SizedBox(height: 20),
+              waitt
+                  ? CustomButton(
+                text: "Signup",
+                onTap: () async {
+                  await signup();
+                },
+                height: 50.0,
+                width: 150.0,
+              )
+                  : CircularProgressIndicator(),
+            ],
+          ),
         ),
       ],
     );

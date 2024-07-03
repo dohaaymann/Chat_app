@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:example/Constant/colors.dart';
 import 'package:example/messages.dart';
+import 'package:example/models/sql.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:full_screen_image/full_screen_image.dart';
@@ -12,8 +13,8 @@ import '../models/SettingsProvider.dart';
 import '../models/theme.dart';
 
 class friend_profile extends StatefulWidget {
-  var name,email,bio,photo;
-  friend_profile(this.name,this.email,this.bio,this.photo);
+  var name,email,bio,photo,isBlock;
+  friend_profile(this.name,this.email,this.bio,this.photo,this.isBlock);
 
   @override
   State<friend_profile> createState() => _friend_profileState();
@@ -22,6 +23,7 @@ var auth=FirebaseAuth.instance;
 
 class _friend_profileState extends State<friend_profile> {
   @override
+  var sql=SQLDB();
   Block_function()async{
   await FirebaseFirestore.instance
       .collection("accounts")
@@ -32,7 +34,9 @@ class _friend_profileState extends State<friend_profile> {
       }).then((value)async{
     await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").
             collection("mess").doc('${widget.email}').update({"isblocked":true});
-
+    widget.isBlock=true;
+    // await sql.update_isblock(true);
+  print("Doneee");
   },);
 }
   unblock_function()async{
@@ -43,7 +47,12 @@ class _friend_profileState extends State<friend_profile> {
       await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").
       collection("mess").doc("${widget.email}").update({"isblocked":false});
       print("donee");
+      widget.isBlock=false;
     },);
+  }
+  void initState() {
+    // TODO: implement initState
+    super.initState();
   }
   Widget build(BuildContext context) {
     var provide=Provider.of<SettingsProvider>(context);
@@ -145,7 +154,7 @@ class _friend_profileState extends State<friend_profile> {
                                  .doc("${FirebaseAuth.instance.currentUser?.email}")
                                  .collection("mess")
                                  .doc(widget.email).delete().then((value) => Get.to(()=>messages({"${FirebaseAuth.instance.currentUser!.uid}"})));
-
+                             Navigator.of(context).pop();
                              },
                            );
                          },
@@ -160,7 +169,7 @@ class _friend_profileState extends State<friend_profile> {
 
                    Divider(height: 5,),
 
-                   !provide.isblock?Container(
+                   !widget.isBlock?Container(
                        margin:EdgeInsets.fromLTRB(0,10,0,6),
                        child:InkWell(onTap: () {
                          Get.defaultDialog(title: "Block user",titleStyle: TextStyle(fontWeight: FontWeight.bold),
@@ -171,6 +180,7 @@ class _friend_profileState extends State<friend_profile> {
                            onCancel: (){},
                            onConfirm:()async{
                                 await Block_function();
+                                Navigator.of(context).pop();
                              },
                          );
                        },
@@ -186,6 +196,10 @@ class _friend_profileState extends State<friend_profile> {
                            onCancel: (){},
                            onConfirm:()async{
                              await unblock_function();
+                             setState(() {
+
+                             });
+                             Navigator.of(context).pop();
                            },
                          );
                        },
