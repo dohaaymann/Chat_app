@@ -180,6 +180,10 @@ class _friend_profileState extends State<friend_profile> {
                            onCancel: (){},
                            onConfirm:()async{
                                 await Block_function();
+                                setState(() {
+                                  provide.set_isblock(true);
+                                  provide.set_blocks('Blockhim');
+                                });
                                 Navigator.of(context).pop();
                              },
                          );
@@ -197,7 +201,8 @@ class _friend_profileState extends State<friend_profile> {
                            onConfirm:()async{
                              await unblock_function();
                              setState(() {
-
+                               provide.set_isblock(false);
+                               provide.set_blocks('none');
                              });
                              Navigator.of(context).pop();
                            },

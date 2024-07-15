@@ -59,16 +59,58 @@ class _Chat_WidgetState extends State<Chat_Widget> {
     _scrollController.dispose();
     super.dispose();
   }
-
+  _onSendTap(
+      String message,
+      ReplyMessage replyMessage,
+      MessageType messageType,
+      )async{
+    // print("/////////////${replyMessage}");
+    var r=get_random().toString();
+    String documentPath = 'accounts/${auth.currentUser?.email}/mess/${widget.user}';
+    bool exists = await doesDocumentExist(documentPath);
+    String documentPath2 = 'accounts/${widget.user}/mess/${auth.currentUser?.email}';
+    bool exists2 = await doesDocumentExist(documentPath2);
+    !exists?await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).set({"time": DateTime.now(),"firstmessage":true,"isblocked":false}):
+    await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).update({"time": DateTime.now()});
+    !exists2?await FirebaseFirestore.instance.collection("accounts").doc("${widget.user}").collection("mess").doc("${auth.currentUser?.email}").set({"time": DateTime.now(),"firstmessage":true,"isblocked":false}):
+    await FirebaseFirestore.instance.collection("accounts").doc("${widget.user}").collection("mess").doc("${auth.currentUser?.email}").update({"time": DateTime.now()});
+    // print('Document exists: $exists');
+    await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).collection("chat")
+        .add({
+      "id": r,
+      "text": "${message}",
+      "replyMessage":replyMessage.message,
+      "istext": messageType.isText,
+      "sendby": auth.currentUser?.email,
+      "Time": DateTime.now()
+    }).then((value) {print("doneeeeee");});
+    await FirebaseFirestore.instance.collection("accounts").doc(widget.user).collection("mess").doc("${auth.currentUser?.email}").collection("chat")
+        .add({
+      "id": r,
+      "text": "${message}",
+      "replyMessage":replyMessage.message,
+      "istext": messageType.isText,
+      "sendby": auth.currentUser?.email,
+      "Time": DateTime.now()
+    }).then((value) {
+      // var notify=Notification_();
+      // print("doneeeeee${DateTime.now()}");
+      // notify.sendPushNotification(
+      //     "${widget.token}"
+      //     ,"${widget.name}",
+      //     "${message}");
+    });
+  }
   @override
   Widget build(BuildContext context) {
     return Consumer<SettingsProvider>(builder: (context, provide, child) {
       var theme = provide.isDarkTheme ? DarkTheme() : LightTheme();
+      print("99900000000000000000000999");
       return ChatView(
         currentUser:currentUser,
         // key: UniqueKey(), // Add unique key here
         // currentUser: widget.currentUser,
-        // isBlocked: provide.block,
+        isBlocked: provide.block,
         loadingWidget: CircularProgressIndicator(color: Colors.red),
         chatController: widget.chatController,
         onSendTap: _onSendTap,
@@ -364,61 +406,61 @@ class _Chat_WidgetState extends State<Chat_Widget> {
     });
   }
 
-  void _onSendTap(
-      String message,
-      ReplyMessage replyMessage,
-      MessageType messageType,
-      ) async {
-    var r = get_random().toString();
-    String documentPath = 'accounts/${auth.currentUser?.email}/mess/${widget.user}';
-    bool exists = await doesDocumentExist(documentPath);
-    String documentPath2 = 'accounts/${widget.user}/mess/${auth.currentUser?.email}';
-    bool exists2 = await doesDocumentExist(documentPath2);
-    if (!exists) {
-      await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).set({
-        "time": DateTime.now(),
-        "firstmessage": true,
-        "isblocked": false
-      });
-    } else {
-      await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).update({
-        "time": DateTime.now()
-      });
-    }
-    if (!exists2) {
-      await FirebaseFirestore.instance.collection("accounts").doc("${widget.user}").collection("mess").doc("${auth.currentUser?.email}").set({
-        "time": DateTime.now(),
-        "firstmessage": true,
-        "isblocked": false
-      });
-    } else {
-      await FirebaseFirestore.instance.collection("accounts").doc("${widget.user}").collection("mess").doc("${auth.currentUser?.email}").update({
-        "time": DateTime.now()
-      });
-    }
-    await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).collection("chat").add({
-      "id": r,
-      "text": "${message}",
-      "replyMessage": replyMessage.message,
-      "istext": messageType.isText,
-      "sendby": auth.currentUser?.email,
-      "Time": DateTime.now()
-    }).then((value) {
-      print("doneeeeee");
-    });
-    await FirebaseFirestore.instance.collection("accounts").doc(widget.user).collection("mess").doc("${auth.currentUser?.email}").collection("chat").add({
-      "id": r,
-      "text": "${message}",
-      "replyMessage": replyMessage.message,
-      "istext": messageType.isText,
-      "sendby": auth.currentUser?.email,
-      "Time": DateTime.now()
-    }).then((value) {
-      var notify = Notification_();
-      print("doneeeeee${DateTime.now()}");
-      notify.sendPushNotification("${widget.token}", "${widget.name}", "${message}");
-    });
-  }
+  // void _onSendTap(
+  //     String message,
+  //     ReplyMessage replyMessage,
+  //     MessageType messageType,
+  //     ) async {
+  //   var r = get_random().toString();
+  //   String documentPath = 'accounts/${auth.currentUser?.email}/mess/${widget.user}';
+  //   bool exists = await doesDocumentExist(documentPath);
+  //   String documentPath2 = 'accounts/${widget.user}/mess/${auth.currentUser?.email}';
+  //   bool exists2 = await doesDocumentExist(documentPath2);
+  //   if (!exists) {
+  //     await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).set({
+  //       "time": DateTime.now(),
+  //       "firstmessage": true,
+  //       "isblocked": false
+  //     });
+  //   } else {
+  //     await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).update({
+  //       "time": DateTime.now()
+  //     });
+  //   }
+  //   if (!exists2) {
+  //     await FirebaseFirestore.instance.collection("accounts").doc("${widget.user}").collection("mess").doc("${auth.currentUser?.email}").set({
+  //       "time": DateTime.now(),
+  //       "firstmessage": true,
+  //       "isblocked": false
+  //     });
+  //   } else {
+  //     await FirebaseFirestore.instance.collection("accounts").doc("${widget.user}").collection("mess").doc("${auth.currentUser?.email}").update({
+  //       "time": DateTime.now()
+  //     });
+  //   }
+  //   await FirebaseFirestore.instance.collection("accounts").doc("${auth.currentUser?.email}").collection("mess").doc(widget.user).collection("chat").add({
+  //     "id": r,
+  //     "text": "${message}",
+  //     "replyMessage": replyMessage.message,
+  //     "istext": messageType.isText,
+  //     "sendby": auth.currentUser?.email,
+  //     "Time": DateTime.now()
+  //   }).then((value) {
+  //     print("doneeeeee");
+  //   });
+  //   await FirebaseFirestore.instance.collection("accounts").doc(widget.user).collection("mess").doc("${auth.currentUser?.email}").collection("chat").add({
+  //     "id": r,
+  //     "text": "${message}",
+  //     "replyMessage": replyMessage.message,
+  //     "istext": messageType.isText,
+  //     "sendby": auth.currentUser?.email,
+  //     "Time": DateTime.now()
+  //   }).then((value) {
+  //     var notify = Notification_();
+  //     print("doneeeeee${DateTime.now()}");
+  //     notify.sendPushNotification("${widget.token}", "${widget.name}", "${message}");
+  //   });
+  // }
 
   Future<bool> doesDocumentExist(String documentPath) async {
     try {

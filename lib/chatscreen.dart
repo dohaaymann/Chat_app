@@ -660,7 +660,7 @@ class _chatState extends State<ChatScreen> {
   );
   }
 }
- Chat_Widget(var currentUser, var messageList, var chatController,  var user,var getmessage, var name, var photo,var bio,var token) {
+ Chat_Ridget(var currentUser, var messageList, var chatController,  var user,var getmessage, var name, var photo,var bio,var token) {
 
   // var sql=SQLDB();
   return Consumer<SettingsProvider>(builder: (context, provide, child){

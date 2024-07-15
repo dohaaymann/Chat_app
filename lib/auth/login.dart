@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../Constant/colors.dart';
 import '../widgets/custombutton.dart';
+import 'change_password.dart';
 class login extends StatefulWidget {
   const login({Key? key}) : super(key: key);
 
@@ -27,8 +28,7 @@ class _loginState extends State<login> {
       if (_formKey.currentState!.validate()) {
         var user;
         try {
-          user = await auth
-              .signInWithEmailAndPassword(
+          user = await auth.signInWithEmailAndPassword(
               email: lemail.text, password: lpass.text)
               .catchError((err) {
             if (err.code == "invalid-email") {
@@ -75,36 +75,37 @@ class _loginState extends State<login> {
     return Column(children: [
       SizedBox(height:80,),
 
-      Container( margin: EdgeInsets.only(left:10,bottom: 5),alignment: Alignment.topLeft,
-          child: Text('Hello!',style: TextStyle(fontFamily:"ProtestStrike-Regular",fontSize:35,color: Colors.white),)),
-      Container( margin: EdgeInsets.only(left:10,bottom: 5),alignment: Alignment.topLeft,
-          child: Text("Welcome \nBack..",style: TextStyle(fontFamily:"ProtestStrike-Regular",letterSpacing:5,fontSize:45,color: Colors.white,fontWeight: FontWeight.bold),)),
+          // Container( margin: EdgeInsets.only(left:10,bottom: 5),alignment: Alignment.topLeft,
+          //     child: Text('Hello!',style: TextStyle(fontFamily:"ProtestStrike-Regular",fontSize:35,color: Colors.white),)),
+          Container( margin: EdgeInsets.only(left:10,bottom: 5),alignment: Alignment.topLeft,
+              child: Text("Welcome \nBack..",style: TextStyle(fontFamily:"ProtestStrike-Regular",letterSpacing:5,fontSize:45,color: Colors.white,fontWeight: FontWeight.bold),)),
 
-      SizedBox(height:60,),
-      SingleChildScrollView(physics: AlwaysScrollableScrollPhysics(),
-        child: Form(
-          key:_formKey,
-          child: Column(
-              children: [
-                Container(
-                    margin: EdgeInsets.only(left: 10,right: 10),
-                    child:customtext("Email",lemail)
-                ),
-                Container(
-                  margin: EdgeInsets.only(top:30,left: 10,right: 10),
-                  child: customtext("Password",lpass),
-                ),
+          SizedBox(height:200,),
+          SingleChildScrollView(physics: AlwaysScrollableScrollPhysics(),
+            child: Form(
+              key:_formKey,
+              child: Column(
+                  children: [
+                    Container(
+                        margin: EdgeInsets.only(left: 10,right: 10),
+                        child:customtext("Email",lemail)
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(top:30,left: 10,right: 10),
+                      child: customtext("Password",lpass),
+                    ),
 
-                Align(alignment:Alignment.topRight,child: TextButton(onPressed: (){}, child: Text("Forget Password?",style:TextStyle(fontSize:17,color: pinkyy,fontWeight: FontWeight.bold),))),
-                SizedBox(height:8,),
-                waitt? CustomButton(text: "Login",onTap:()async{
-
-                  await login();
-                },height:50.0,width:150.0):CircularProgressIndicator()]
+                    Align(alignment:Alignment.topRight,child: TextButton(onPressed: (){
+                      Get.to(()=>change_pass());
+                      }, child: Text("Forget Password?",style:TextStyle(fontSize:17,color: Colors.black54,fontWeight: FontWeight.bold),))),
+                    SizedBox(height:8,),
+                    waitt? CustomButton(text: "Login",onTap:()async{
+                      await login();
+                    },height:50.0,width:150.0):CircularProgressIndicator()]
+              ),
+            ),
           ),
-        ),
-      ),
-    ],);
+        ],);
   }
 }
 

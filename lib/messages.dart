@@ -1,5 +1,6 @@
+import 'dart:ui';
+
 import 'package:example/auth/auth.dart';
-import 'package:example/chatscreen.dart';
 import 'package:example/auth/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:skeletons/skeletons.dart';
@@ -149,7 +150,7 @@ class _messagesState extends State<messages> {
     var theme = provide.isDarkTheme ? DarkTheme() : LightTheme();
     var Width=MediaQuery.of(context).size.width;
     return Scaffold(
-        resizeToAvoidBottomInset:false,
+      resizeToAvoidBottomInset:false,
       body:Stack(
         children: [
           Container(
@@ -161,9 +162,13 @@ class _messagesState extends State<messages> {
                     colors: [
                       // LIGHT MODE
                       // accentPurple,pinkyy
+                      // Color(0xff543863),
+                      // Color(0xff4CBF87),
                       Color(0xff543863),
-                      Color(0xff4CBF87),
-                    ]):LinearGradient(tileMode: TileMode.mirror,
+                      Color(0xff84aa9b)
+                      // Color(0xff84aa9b),Color(0xffdadc79)
+                    ]):
+                LinearGradient(tileMode: TileMode.mirror,
                     colors: [
                       // DARK MODE
                       Color(0xff7B7794),
@@ -190,7 +195,7 @@ class _messagesState extends State<messages> {
                           search(value.toString());
                         });
                       },
-                      decoration: InputDecoration( hintText: "Search",hintStyle: TextStyle(color:theme.TextColor,fontSize:20),
+                      decoration: InputDecoration( hintText: "Search",hintStyle: TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black54,fontSize:20),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(25))
                       ),
                     ),
@@ -214,7 +219,7 @@ class _messagesState extends State<messages> {
                                 await check_ifblocked(s_list[index]['email'])?provide.set_blocks('Blocked'):provide.set_blocks('none');
 
                                 issearch = !issearch;
-                                Get.to(() => ChatScreen(
+                                Get.to(() => chat_(
                                     s_list[index]['name'],
                                     s_list[index]['email'],
                                     s_list[index]['bio'],
@@ -243,32 +248,32 @@ class _messagesState extends State<messages> {
                   builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(
-                          child: Column(
-                            children: [
-                              for(int i=0;i<chats.length;i++)
-                                SizedBox(width:600,height:74,
-                                  child: SkeletonListView(
-                                    item: SkeletonListTile(
-                                      verticalSpacing: 12,
-                                      leadingStyle: SkeletonAvatarStyle(
-                                          width: 64, height:64, shape: BoxShape.circle),
-                                      titleStyle:
-                                      SkeletonLineStyle(
-                                          height: 16,
-                                          minLength: 200,
-                                          randomLength: true,
-                                          borderRadius: BorderRadius.circular(12)),
-                                      subtitleStyle: SkeletonLineStyle(
-                                          height: 12,
-                                          maxLength: 200,
-                                          randomLength: true,
-                                          borderRadius: BorderRadius.circular(12)),
-                                      hasSubtitle: true,
-                                    ),
-                                  ),
-                                )
-                            ],
-                          )
+                          // child: Column(
+                          //   children: [
+                          //     for(int i=0;i<chats.length;i++)
+                          //       SizedBox(width:600,height:74,
+                          //         // child: SkeletonListView(
+                          //         //   item: SkeletonListTile(
+                          //         //     verticalSpacing: 12,
+                          //         //     leadingStyle: SkeletonAvatarStyle(
+                          //         //         width: 64, height:64, shape: BoxShape.circle),
+                          //         //     titleStyle:
+                          //         //     SkeletonLineStyle(
+                          //         //         height: 16,
+                          //         //         minLength: 200,
+                          //         //         randomLength: true,
+                          //         //         borderRadius: BorderRadius.circular(12)),
+                          //         //     subtitleStyle: SkeletonLineStyle(
+                          //         //         height: 12,
+                          //         //         maxLength: 200,
+                          //         //         randomLength: true,
+                          //         //         borderRadius: BorderRadius.circular(12)),
+                          //         //     hasSubtitle: true,
+                          //         //   ),
+                          //         // ),
+                          //       )
+                          //   ],
+                          // )
                       );
                     }
                     if (snapshot.hasError) {
@@ -282,9 +287,9 @@ class _messagesState extends State<messages> {
                             // Spacer(),
                             SizedBox(height:150),
                            Image.asset("image/message.png",height: 180,),
-                            Text("No chats yet",style: TextStyle(fontWeight: FontWeight.bold,fontSize: 25),),
+                            Text("No chats yet",style: TextStyle(color:theme.TextColor,fontWeight: FontWeight.bold,fontSize: 25),),
                             SizedBox(height: 15,),
-                            Text("You didn't make any conversation yet",style: TextStyle(color:Colors.black45,fontWeight: FontWeight.bold,fontSize:18),),
+                            Text("You didn't make any conversation yet",style: TextStyle(color:provide.isDarkTheme?Colors.white60:Colors.black45,fontWeight: FontWeight.bold,fontSize:18),),
                           ],
                         ),
                       );
@@ -357,32 +362,32 @@ class _messagesState extends State<messages> {
                                         builder: (BuildContext context,AsyncSnapshot< DocumentSnapshot< Map<String, dynamic>>>isBlockedSnapshot) {
                                           if (isBlockedSnapshot.connectionState ==ConnectionState.waiting) {
                                             return Center(
-                                                child: Column(
-                                                  children: [
-                                                    for(int i=0;i<chats.length;i++)
-                                                      SizedBox(width:600,height:74,
-                                                        child: SkeletonListView(
-                                                          item: SkeletonListTile(
-                                                            verticalSpacing: 12,
-                                                            leadingStyle: SkeletonAvatarStyle(
-                                                                width: 64, height:64, shape: BoxShape.circle),
-                                                            titleStyle:
-                                                            SkeletonLineStyle(
-                                                                height: 16,
-                                                                minLength: 200,
-                                                                randomLength: true,
-                                                                borderRadius: BorderRadius.circular(12)),
-                                                            subtitleStyle: SkeletonLineStyle(
-                                                                height: 12,
-                                                                maxLength: 200,
-                                                                randomLength: true,
-                                                                borderRadius: BorderRadius.circular(12)),
-                                                            hasSubtitle: true,
-                                                          ),
-                                                        ),
-                                                      )
-                                                  ],
-                                                )
+                                                // child: Column(
+                                                //   children: [
+                                                //     for(int i=0;i<chats.length;i++)
+                                                //       SizedBox(width:600,height:74,
+                                                //         child: SkeletonListView(
+                                                //           item: SkeletonListTile(
+                                                //             verticalSpacing: 12,
+                                                //             leadingStyle: SkeletonAvatarStyle(
+                                                //                 width: 64, height:64, shape: BoxShape.circle),
+                                                //             titleStyle:
+                                                //             SkeletonLineStyle(
+                                                //                 height: 16,
+                                                //                 minLength: 200,
+                                                //                 randomLength: true,
+                                                //                 borderRadius: BorderRadius.circular(12)),
+                                                //             subtitleStyle: SkeletonLineStyle(
+                                                //                 height: 12,
+                                                //                 maxLength: 200,
+                                                //                 randomLength: true,
+                                                //                 borderRadius: BorderRadius.circular(12)),
+                                                //             hasSubtitle: true,
+                                                //           ),
+                                                //         ),
+                                                //       )
+                                                //   ],
+                                                // )
                                             );
                                           }
                                           if (isBlockedSnapshot.hasError) {
@@ -406,32 +411,32 @@ class _messagesState extends State<messages> {
                                     if (chatSnapshot.connectionState ==
                                         ConnectionState.waiting) {
                                       return Center(
-                                          child: Column(
-                                            children: [
-                                              for(int i=0;i<chats.length;i++)
-                                                SizedBox(width:600,height:74,
-                                                  child: SkeletonListView(
-                                                    item: SkeletonListTile(
-                                                      verticalSpacing: 12,
-                                                      leadingStyle: SkeletonAvatarStyle(
-                                                          width: 64, height:64, shape: BoxShape.circle),
-                                                      titleStyle:
-                                                      SkeletonLineStyle(
-                                                          height: 16,
-                                                          minLength: 200,
-                                                          randomLength: true,
-                                                          borderRadius: BorderRadius.circular(12)),
-                                                      subtitleStyle: SkeletonLineStyle(
-                                                          height: 12,
-                                                          maxLength: 200,
-                                                          randomLength: true,
-                                                          borderRadius: BorderRadius.circular(12)),
-                                                      hasSubtitle: true,
-                                                    ),
-                                                  ),
-                                                )
-                                            ],
-                                          )
+                                          // child: Column(
+                                          //   children: [
+                                          //     for(int i=0;i<chats.length;i++)
+                                          //       SizedBox(width:600,height:74,
+                                          //         child: SkeletonListView(
+                                          //           item: SkeletonListTile(
+                                          //             verticalSpacing: 12,
+                                          //             leadingStyle: SkeletonAvatarStyle(
+                                          //                 width: 64, height:64, shape: BoxShape.circle),
+                                          //             titleStyle:
+                                          //             SkeletonLineStyle(
+                                          //                 height: 16,
+                                          //                 minLength: 200,
+                                          //                 randomLength: true,
+                                          //                 borderRadius: BorderRadius.circular(12)),
+                                          //             subtitleStyle: SkeletonLineStyle(
+                                          //                 height: 12,
+                                          //                 maxLength: 200,
+                                          //                 randomLength: true,
+                                          //                 borderRadius: BorderRadius.circular(12)),
+                                          //             hasSubtitle: true,
+                                          //           ),
+                                          //         ),
+                                          //       )
+                                          //   ],
+                                          // )
                                       );
                                     }
                                     if (chatSnapshot.hasError) {
@@ -472,19 +477,21 @@ class _messagesState extends State<messages> {
                               textConfirm: "Delete",
                               textCancel: "Cancel",
                               onCancel: () {},
-                                cancel: null,
-                                confirm: wait?CircularProgressIndicator():null,
+                                // confirm: wait?CircularProgressIndicator():null,
                               onConfirm: () async {
-                                  setState(() {
-                                    wait=!wait;
-                                  });
-                             Future.delayed(const Duration(seconds:3), () {
-                               setState(() {
-                                 wait=!wait;
-                               });
-                               Navigator.of(context).pop();
-                             });
-                              await delete_chat(userDoc.id);
+                                  print("d");
+                                  await delete_chat(userDoc.id);
+                                    Navigator.of(context).pop();
+                                // setState(() {
+                              //     wait=!wait;
+                              //     });
+                                  // Route route = MaterialPageRoute(builder: (context) =>messages(auth.currentUser!.uid));
+                                  // Navigator.pushReplacement(context, route);                             //      Future.delayed(const Duration(seconds:3), () {
+                             //   setState(() {
+                             //     wait=!wait;
+                             //     Navigator.of(context).pop();
+                             //   });
+                             // });
 
                               },
                               content:Text("Permanently delete chat?")
@@ -515,7 +522,7 @@ class _messagesState extends State<messages> {
                                            child: CircleAvatar(radius:30,backgroundImage: NetworkImage("$photo"),)),
                                       const SizedBox(width: 10,),
                                       Container(
-                                        width:Width-(80+50),
+                                        width:Width-(80+10+Width-(Width-40)),
                                         child: Column(crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text("${userName}",style:TextStyle(color:theme.textFieldTextColor,fontWeight: FontWeight.bold,fontSize:18),),
@@ -541,7 +548,7 @@ class _messagesState extends State<messages> {
                                             ],),
                                           ], ),
                                       ),
-                                      Container(width:40,
+                                      Container(width:Width-(Width-40),
                                         child: Column(crossAxisAlignment: CrossAxisAlignment.end,mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
                                             Text("${convertTime(lastMessageDoc['Time'])}",style:TextStyle(color:theme.textFieldTextColor,fontWeight: FontWeight.bold),),

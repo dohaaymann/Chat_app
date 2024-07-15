@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:example/Settings/Blocked.dart';
 import 'package:example/Settings/DeleteAccount.dart';
 import 'package:example/auth/auth.dart';
+import 'package:example/auth/create_pass.dart';
 import 'package:example/chatscreen.dart';
 import 'package:example/models/sql.dart';
+import 'package:example/ne.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
@@ -13,6 +16,7 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import '../Constant/colors.dart';
+import '../auth/change_password.dart';
 import '../face.dart';
 import '../messages.dart';
 import '../models/SettingsProvider.dart';
@@ -61,9 +65,9 @@ var sql=SQLDB();
     var theme = provider.isDarkTheme ? DarkTheme() : LightTheme();
 
     return Scaffold(
+      resizeToAvoidBottomInset:false,
       backgroundColor: theme.backgroundhome,
-      body: !wait
-          ? Stack(
+      body: Stack(
         children: [
           ClipPath(
             clipper: OvalBottomBorderClipper(),
@@ -72,7 +76,13 @@ var sql=SQLDB();
               width: double.infinity,
               decoration: BoxDecoration(
                 gradient: !provider.isDarkTheme
-                    ? LinearGradient(colors: [Color(0xff543863), Color(0xff4CBF87)])
+                    ? LinearGradient(colors: [
+                  Color(0xff543863),
+                  Color(0xff84aa9b)
+                      // Color(0xff84aa9b),
+                      // Color(0xff84aa9b),
+                  // Color(0xffdadc79)
+                ])
                     : LinearGradient(colors: [Color(0xff7B7794), Color(0xff231E73)]),
               ),
               child: Padding(
@@ -158,6 +168,22 @@ var sql=SQLDB();
                               ),
                             ),
                           ),
+                          InkWell(
+                            onTap: () {
+                              // Get.to(() => newpass());
+                              Get.to(() => change_pass());
+                            },
+                            child: Container(
+                              height: 50,
+                              child: Row(
+                                children: [
+                                  Text("Change Password", style: TextStyle(color: theme.textFieldTextColor, fontWeight: FontWeight.w500, fontSize: 22)),
+                                  Spacer(),
+                                  Icon(Icons.arrow_forward_ios, size: 20, color: theme.textFieldTextColor),
+                                ],
+                              ),
+                            ),
+                          ),
                           Row(
                             children: [
                               Text("Notifications", style: TextStyle(color: theme.textFieldTextColor, fontWeight: FontWeight.w500, fontSize: 22)),
@@ -195,8 +221,8 @@ var sql=SQLDB();
                             InkWell(
                               onTap: () {
                                 if (options[i] == 'Blocked Users') {
-                                  // Get.to(() => Blocked());
-                                  // Get.to(() => chat_('farah@mail.com',));
+                                  Get.to(() => Blocked());
+                                  // Get.to(() => auth_p());
                                 } else {
                                   Get.to(() => DeleteAccount(name, auth.currentUser!.email!, photo));
                                 }
@@ -223,6 +249,8 @@ var sql=SQLDB();
                                   alignment: Alignment.bottomCenter,
                                   child: InkWell(
                                     onTap: () async {
+                                      await auth.signOut();
+
                                       setState(() {
                                         wait = !wait;
                                       });
@@ -271,10 +299,15 @@ var sql=SQLDB();
               ],
             ),
           ),
+           Visibility(visible: wait,
+             child:
+          Container(color: Colors.white54,
+              child: Center(child: Container(
+                            width:50,height: 50,
+                              child: CircularProgressIndicator())), ),
+           ),
         ],
-      )
-          : Center(child: Container(color: Colors.transparent,
-          child: CircularProgressIndicator())),
+      ),
     );
   }
 }

@@ -63,8 +63,6 @@ void main() async{
      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
      await send_notification();
    }
-   var sql=SQLDB();
-   // sql.insert(false);
   await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
   runApp(ChangeNotifierProvider(create: (context) =>SettingsProvider(),child:const MyApp(),));
 }

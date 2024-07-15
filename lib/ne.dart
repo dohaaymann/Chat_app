@@ -1,324 +1,224 @@
-// import
-// 'package:chatview/chatview.dart';
-// import 'package:chatview/src/widgets/chat_list_widget.dart';
-// import 'package:chatview/src/widgets/chat_view_inherited_widget.dart';
-// import 'package:chatview/src/widgets/chatview_state_widget.dart';
-// import 'package:flutter/material.dart';
-// import 'package:timeago/timeago.dart';
-// import '../values/custom_time_messages.dart';
-// import 'send_message_widget.dart';
-//
-// class ChatView extends StatefulWidget {
-//   ChatView({
-//     Key? key,
-//     required this.chatController,
-//     required this.currentUser,
-//     this.onSendTap,
-//     this.isBlocked,
-//     this.profileCircleConfig,
-//     this.chatBubbleConfig,
-//     this.repliedMessageConfig,
-//     this.swipeToReplyConfig,
-//     this.replyPopupConfig,
-//     // this.reactionPopupConfig,
-//     this.loadMoreData,
-//     this.loadingWidget,
-//     this.messageConfig,
-//     this.isLastPage,
-//     this.appBar,
-//     ChatBackgroundConfiguration? chatBackgroundConfig,
-//     this.typeIndicatorConfig,
-//     this.sendMessageBuilder,
-//     this.showTypingIndicator = false,
-//     this.sendMessageConfig,
-//     this.onChatListTap,
-//     required this.chatViewState,
-//     ChatViewStateConfiguration? chatViewStateConfig,
-//     this.featureActiveConfig = const FeatureActiveConfig(),
-//   })  : chatBackgroundConfig =
-//       chatBackgroundConfig ?? const ChatBackgroundConfiguration(),
-//         chatViewStateConfig =
-//             chatViewStateConfig ?? const ChatViewStateConfiguration(),
-//         super(key: key);
-//
-//   /// Provides configuration related to user profile circle avatar.
-//   final ProfileCircleConfiguration? profileCircleConfig;
-//
-//   /// Provides configurations related to chat bubble such as padding, margin, max
-//   /// width etc.
-//   final ChatBubbleConfiguration? chatBubbleConfig;
-//
-//   /// Allow user to giving customisation different types
-//   /// messages.
-//   final MessageConfiguration? messageConfig;
-//
-//   /// Provides configuration for replied message view which is located upon chat
-//   /// bubble.
-//   final RepliedMessageConfiguration? repliedMessageConfig;
-//
-//   /// Provides configurations related to swipe chat bubble which triggers
-//   /// when user swipe chat bubble.
-//   final SwipeToReplyConfiguration? swipeToReplyConfig;
-//
-//   /// Provides configuration for reply snack bar's appearance and options.
-//   final ReplyPopupConfiguration? replyPopupConfig;
-//
-//   /// Provides configuration for reaction pop up appearance.
-//   // final ReactionPopupConfiguration? reactionPopupConfig;
-//
-//   /// Allow user to give customisation to background of chat
-//   final ChatBackgroundConfiguration chatBackgroundConfig;
-//
-//   /// Provides callback when user actions reaches to top and needs to load more
-//   /// chat
-//   final VoidCallBackWithFuture? loadMoreData;
-//
-//   /// Provides widget for loading view while pagination is enabled.
-//   final Widget? loadingWidget;
-//
-//   /// Provides flag if there is no more next data left in list.
-//   final bool? isLastPage;
-//
-//   /// Provides call back when user tap on send button in text field. It returns
-//   /// message, reply message and message type.
-//   final StringMessageCallBack? onSendTap;
-//   var isBlocked;
-//
-//   /// Provides builder which helps you to make custom text field and functionality.
-//   final ReplyMessageWithReturnWidget? sendMessageBuilder;
-//
-//   @Deprecated('Use [ChatController.setTypingIndicator]  instead')
-//
-//   /// Allow user to show typing indicator.
-//   final bool showTypingIndicator;
-//
-//   /// Allow user to giving customisation typing indicator.
-//   final TypeIndicatorConfiguration? typeIndicatorConfig;
-//
-//   /// Provides controller for accessing few function for running chat.
-//   final ChatController chatController;
-//
-//   /// Provides configuration of default text field in chat.
-//   final SendMessageConfiguration? sendMessageConfig;
-//
-//   /// Provides current state of chat.
-//   final ChatViewState chatViewState;
-//
-//   /// Provides configuration for chat view state appearance and functionality.
-//   final ChatViewStateConfiguration? chatViewStateConfig;
-//
-//   /// Provides current user which is sending messages.
-//   final ChatUser currentUser;
-//
-//   /// Provides configuration for turn on/off specific features.
-//   final FeatureActiveConfig featureActiveConfig;
-//
-//   /// Provides parameter so user can assign ChatViewAppbar.
-//   final Widget? appBar;
-//
-//   /// Provides callback when user tap on chat list.
-//   final VoidCallBack? onChatListTap;
-//
-//   @override
-//   State<ChatView> createState() => _ChatViewState();
-// }
-//
-// class _ChatViewState extends State<ChatView>
-//     with SingleTickerProviderStateMixin {
-//   final GlobalKey<SendMessageWidgetState> _sendMessageKey = GlobalKey();
-//   ValueNotifier<ReplyMessage> replyMessage =
-//   ValueNotifier(const ReplyMessage());
-//
-//   ChatController get chatController => widget.chatController;
-//
-//   // bool get showTypingIndicator => widget.showTypingIndicator;
-//
-//   ChatBackgroundConfiguration get chatBackgroundConfig =>
-//       widget.chatBackgroundConfig;
-//
-//   ChatViewState get chatViewState => widget.chatViewState;
-//
-//   ChatViewStateConfiguration? get chatViewStateConfig =>
-//       widget.chatViewStateConfig;
-//
-//   FeatureActiveConfig get featureActiveConfig => widget.featureActiveConfig;
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     // print("${widget.isBlocked}/////////////////");
-//     setLocaleMessages('en', ReceiptsCustomMessages());
-//     // Adds current user in users list.
-//     chatController.chatUsers.add(widget.currentUser);
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     // Scroll to last message on in hasMessages state.
-//     // TODO: Remove this in new versions.
-//     // ignore: deprecated_member_use_from_same_package
-//     if (widget.showTypingIndicator ||
-//         widget.chatController.showTypingIndicator &&
-//             chatViewState.hasMessages) {
-//       chatController.scrollToLastMessage();
-//     }
-//     return ChatViewInheritedWidget(
-//       chatController: chatController,
-//       featureActiveConfig: featureActiveConfig,
-//       currentUser: widget.currentUser,
-//       child: Container(
-//         height:
-//         chatBackgroundConfig.height ?? MediaQuery.of(context).size.height,
-//         width: chatBackgroundConfig.width ?? MediaQuery.of(context).size.width,
-//         decoration: BoxDecoration(
-//           color: chatBackgroundConfig.backgroundColor ?? Colors.white,
-//           image: chatBackgroundConfig.backgroundImage != null
-//               ? DecorationImage(
-//             fit: BoxFit.fill,
-//             image: NetworkImage(chatBackgroundConfig.backgroundImage!),
-//           )
-//               : null,
-//         ),
-//         padding: chatBackgroundConfig.padding,
-//         margin: chatBackgroundConfig.margin,
-//         child: Column(
-//           children: [
-//             if (widget.appBar != null) widget.appBar!,
-//             Expanded(
-//               child: Stack(
-//                 children: [
-//                   if (chatViewState.isLoading)
-//                     ChatViewStateWidget(
-//                       chatViewStateWidgetConfig:
-//                       chatViewStateConfig?.loadingWidgetConfig,
-//                       chatViewState: chatViewState,
-//                     )
-//                   else if (chatViewState.noMessages)
-//                     ChatViewStateWidget(
-//                       chatViewStateWidgetConfig:
-//                       chatViewStateConfig?.noMessageWidgetConfig,
-//                       chatViewState: chatViewState,
-//                       onReloadButtonTap:() {
-//                         print("RRRRRRRRRRREEEEEEEEEELLLLLLLLLLOOOOOOOOOD");
-//                         // chatViewStateConfig?.onReloadButtonTap
-//                       },
-//                     )
-//                   else if (chatViewState.isError)
-//                       ChatViewStateWidget(
-//                           chatViewStateWidgetConfig:
-//                           chatViewStateConfig?.errorWidgetConfig,
-//                           chatViewState: chatViewState,
-//                           onReloadButtonTap:(){
-//                             // chatViewStateConfig?.onReloadButtonTap,
-//                             print("RRRRRRRRRRREEEEEEEEEELLLLLLLLLLOOOOOOOOOD22222222");
-//                           }
-//                       )
-//                     else if (chatViewState.hasMessages)
-//                         ValueListenableBuilder<ReplyMessage>(
-//                           valueListenable: replyMessage,
-//                           builder: (_, state, child) {
-//                             return ChatListWidget(
-//                               /// TODO: Remove this in future releases.
-//                               // ignore: deprecated_member_use_from_same_package
-//                               showTypingIndicator: widget.showTypingIndicator,
-//                               replyMessage: state,
-//                               chatController: widget.chatController,
-//                               chatBackgroundConfig: widget.chatBackgroundConfig,
-//                               // reactionPopupConfig: widget.reactionPopupConfig,
-//                               typeIndicatorConfig: widget.typeIndicatorConfig,
-//                               chatBubbleConfig: widget.chatBubbleConfig,
-//                               loadMoreData: widget.loadMoreData,
-//                               isLastPage: widget.isLastPage,
-//                               replyPopupConfig: widget.replyPopupConfig,
-//                               loadingWidget: widget.loadingWidget,
-//                               messageConfig: widget.messageConfig,
-//                               profileCircleConfig: widget.profileCircleConfig,
-//                               repliedMessageConfig: widget.repliedMessageConfig,
-//                               swipeToReplyConfig: widget.swipeToReplyConfig,
-//                               onChatListTap: widget.onChatListTap,
-//                               assignReplyMessage: (message) => _sendMessageKey
-//                                   .currentState
-//                                   ?.assignReplyMessage(message),
-//                             );
-//                           },
-//                         ),
-//                   // if (featureActiveConfig.enableTextField)
-//                   //   SendMessageWidget(
-//                   //     key: _sendMessageKey,
-//                   //     chatController: chatController,
-//                   //     sendMessageBuilder: widget.sendMessageBuilder,
-//                   //     sendMessageConfig: widget.sendMessageConfig,
-//                   //     backgroundColor: chatBackgroundConfig.backgroundColor,
-//                   //     onSendTap: _onSendTap,
-//                   //     onReplyCallback: (reply) => replyMessage.value = reply,
-//                   //     onReplyCloseCallback: () =>
-//                   //         replyMessage.value = const ReplyMessage(),
-//                   //   ),
-//                   if (widget.isBlocked=='Blockhim')
-//                     Align(alignment: Alignment.bottomCenter,child:
-//                     Container(width: double.infinity,height:40,alignment: Alignment.center,
-//                         padding: EdgeInsets.all(10),color: Colors.grey,
-//                         child: Text("you can no longer send Direct Messages to this person.",style: TextStyle(
-//                           fontWeight: FontWeight.bold,fontSize:14,
-//                         ),))
-//                       ,),if (widget.isBlocked=='Blocked')
-//                     Align(alignment: Alignment.bottomCenter,child:
-//                     Container(width: double.infinity,height:40,alignment: Alignment.center,
-//                         padding: EdgeInsets.all(10),color: Colors.grey,
-//                         child: Text("you can no longer send messages to this person.",style: TextStyle(
-//                           fontWeight: FontWeight.bold,fontSize:14,
-//                         ),))
-//                       ,),
-//                   // // if (featureActiveConfig.enableTextField)
-//                   //   if (widget.isBlocked=='none')
-//                   SendMessageWidget(
-//
-//                     key: _sendMessageKey,
-//                     chatController: chatController,
-//                     sendMessageBuilder: widget.sendMessageBuilder,
-//                     sendMessageConfig: widget.sendMessageConfig,
-//                     backgroundColor: chatBackgroundConfig.backgroundColor,
-//                     onSendTap: _onSendTap,
-//                     onReplyCallback: (reply) => replyMessage.value = reply,
-//                     onReplyCloseCallback: () =>
-//                     replyMessage.value = const ReplyMessage(),
-//                   ),
-//                   // if (widget.isBlocked)
-//                   //   if (featureActiveConfig.enableTextField)
-//                   //     Text("Can't send message to blocked user")
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   void _onSendTap(
-//       String message,
-//       ReplyMessage replyMessage,
-//       MessageType messageType,
-//       ){
-//     if (widget.sendMessageBuilder == null) {
-//       if (widget.onSendTap != null) {
-//         widget.onSendTap!(message, replyMessage, messageType);
-//       }
-//       _assignReplyMessage();
-//     }
-//     chatController.scrollToLastMessage();
-//   }
-//
-//   void replyMessageViewClose() => _sendMessageKey.currentState?.onCloseTap();
-//
-//   void _assignReplyMessage() {
-//     if (replyMessage.value.message.isNotEmpty) {
-//       replyMessage.value = const ReplyMessage();
-//     }
-//   }
-//   @override
-//   void dispose() {
-//     replyMessage.dispose();
-//     super.dispose();
-//   }
-// }
+import 'dart:io';
+
+import 'package:audio_waveforms/audio_waveforms.dart';
+// import 'package:audio_waveforms_example/chat_bubble.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'chat_bubble.dart';
+class audio extends StatefulWidget {
+  const audio({Key? key}) : super(key: key);
+
+  @override
+  State<audio> createState() => _audioState();
+}
+
+class _audioState extends State<audio> {
+  late final RecorderController recorderController;
+
+  String? path;
+  String? musicFile;
+  bool isRecording = false;
+  bool isRecordingCompleted = false;
+  bool isLoading = true;
+  late Directory appDirectory;
+
+  @override
+  void initState() {
+    super.initState();
+    _getDir();
+    _initialiseControllers();
+  }
+
+  void _getDir() async {
+    appDirectory = await getApplicationDocumentsDirectory();
+    path = "${appDirectory.path}/recording.m4a";
+    isLoading = false;
+    setState(() {});
+  }
+
+  void _initialiseControllers() {
+    recorderController = RecorderController()
+      ..androidEncoder = AndroidEncoder.aac
+      ..androidOutputFormat = AndroidOutputFormat.mpeg4
+      ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
+      ..sampleRate = 44100;
+  }
+
+  void _pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      musicFile = result.files.single.path;
+      setState(() {});
+    } else {
+      debugPrint("File not picked");
+    }
+  }
+
+  @override
+  void dispose() {
+    recorderController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF252331),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF252331),
+        elevation: 1,
+        centerTitle: true,
+        shadowColor: Colors.grey,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/logo.png',
+              scale: 1.5,
+            ),
+            const SizedBox(width: 10),
+            const Text('Simform'),
+          ],
+        ),
+      ),
+      body: isLoading
+          ? const Center(
+        child: CircularProgressIndicator(),
+      )
+          : SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: 4,
+                itemBuilder: (_, index) {
+                  return WaveBubble(
+                    index: index + 1,
+                    isSender: index.isOdd,
+                    width: MediaQuery.of(context).size.width / 2,
+                    appDirectory: appDirectory,
+                  );
+                },
+              ),
+            ),
+            if (isRecordingCompleted)
+              WaveBubble(
+                path: path,
+                isSender: true,
+                appDirectory: appDirectory,
+              ),
+            if (musicFile != null)
+              WaveBubble(
+                path: musicFile,
+                isSender: true,
+                appDirectory: appDirectory,
+              ),
+            SafeArea(
+              child: Row(
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: isRecording
+                        ? AudioWaveforms(
+                      enableGesture: true,
+                      size: Size(
+                          MediaQuery.of(context).size.width / 2,
+                          50),
+                      recorderController: recorderController,
+                      waveStyle: const WaveStyle(
+                        waveColor: Colors.white,
+                        extendWaveform: true,
+                        showMiddleLine: false,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12.0),
+                        color: const Color(0xFF1E1B26),
+                      ),
+                      padding: const EdgeInsets.only(left: 18),
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 15),
+                    )
+                        : Container(
+                      width:
+                      MediaQuery.of(context).size.width / 1.7,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E1B26),
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      padding: const EdgeInsets.only(left: 18),
+                      margin: const EdgeInsets.symmetric(
+                          horizontal: 15),
+                      child: TextField(
+                        readOnly: true,
+                        decoration: InputDecoration(
+                          hintText: "Type Something...",
+                          hintStyle: const TextStyle(
+                              color: Colors.white54),
+                          contentPadding:
+                          const EdgeInsets.only(top: 16),
+                          border: InputBorder.none,
+                          suffixIcon: IconButton(
+                            onPressed: _pickFile,
+                            icon: Icon(Icons.adaptive.share),
+                            color: Colors.white54,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: _refreshWave,
+                    icon: Icon(
+                      isRecording ? Icons.refresh : Icons.send,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  IconButton(
+                    onPressed: _startOrStopRecording,
+                    icon: Icon(isRecording ? Icons.stop : Icons.mic),
+                    color: Colors.white,
+                    iconSize: 28,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _startOrStopRecording() async {
+    try {
+      if (isRecording) {
+        print("recording00");
+        recorderController.reset();
+
+        path = await recorderController.stop(false);
+
+        if (path != null) {
+          isRecordingCompleted = true;
+          debugPrint(path);
+          debugPrint("Recorded file size: ${File(path!).lengthSync()}");
+        }
+      } else {
+        await recorderController.record(path: path); // Path is optional
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    } finally {
+      setState(() {
+        isRecording = !isRecording;
+      });
+    }
+  }
+
+  void _refreshWave() {
+    if (isRecording) recorderController.refresh();
+  }
+}

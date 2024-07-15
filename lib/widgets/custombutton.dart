@@ -29,14 +29,21 @@ class _CustomButtonState extends State<CustomButton> {
         height: widget.height,
         alignment: Alignment.center,
         decoration: BoxDecoration(
+          // color:Color(0xff84aa9b),
           borderRadius: BorderRadius.circular(25),
           gradient: !provide.isDarkTheme?LinearGradient(
             // begin: Alignment.bottomCenter,end: Alignment.topCenter,
               colors: [
                 // LIGHT MODE
                 // accentPurple,pinkyy
+                // Color(0xff543863),
+                // Color(0xff4CBF87),
+                // Color(0xffdadc79),
+                // accentPurpleColor,
+                // minitgreen
                 Color(0xff543863),
-                Color(0xff4CBF87),
+                Color(0xff84aa9b)
+
               ]):LinearGradient(tileMode: TileMode.mirror,
               colors: [
                 // DARK MODE

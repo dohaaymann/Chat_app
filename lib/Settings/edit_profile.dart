@@ -32,7 +32,7 @@ class edit_profile extends StatefulWidget {
 
 class _edit_profileState extends State<edit_profile> {
   bool obscure = true, waitt = false;
-  List fieldsName = ['Name', 'Email', 'Bio', 'Password'];
+  List fieldsName = ['Name', 'Email', 'Bio'];
   final TextEditingController _name = TextEditingController();
   final TextEditingController _email = TextEditingController();
   final TextEditingController _bio = TextEditingController();
@@ -74,6 +74,7 @@ class _edit_profileState extends State<edit_profile> {
       final file = File(res.path!);
       final upload = await store.child(pathh).putFile(file);
       Url = await store.child(pathh).getDownloadURL();
+
       await FirebaseFirestore.instance
           .collection("accounts")
           .doc("${auth.currentUser?.email}")
@@ -89,7 +90,7 @@ class _edit_profileState extends State<edit_profile> {
       print("ERROR: $e");
     }
   }
-
+var password;
   Future<void> get_password() async {
     try {
       var userEmail = await FirebaseAuth.instance.currentUser?.email;
@@ -102,6 +103,7 @@ class _edit_profileState extends State<edit_profile> {
         if (documentSnapshot.exists) {
           setState(() async {
             _pass.text = await documentSnapshot.get('password');
+            password = await documentSnapshot.get('password');
             _bio.text = await documentSnapshot.get('bio');
           });
         } else {
@@ -134,7 +136,7 @@ class _edit_profileState extends State<edit_profile> {
     _name.text = auth.currentUser!.displayName!;
     _email.text = auth.currentUser!.email!;
     photo = auth.currentUser!.photoURL.toString();
-    fieldsController = [_name, _email, _bio, _pass];
+    fieldsController = [_name, _email, _bio];
   }
 
   @override
@@ -276,7 +278,8 @@ class _edit_profileState extends State<edit_profile> {
                                     )
                                         : null,
                                     hintText: fieldsName[i],
-                                    hintStyle: TextStyle(fontSize: 20),
+                                    hintStyle: TextStyle(color:Colors.grey,
+                                    fontSize: 20),
                                   ),
                                 ),
                               ),
@@ -353,7 +356,7 @@ class _edit_profileState extends State<edit_profile> {
                       waitt = !waitt;
                     });
                     print("d1");
-                    await auth.currentUser!.updatePassword(_pass.text).then((value) => print('d2'),);
+                    password==_pass.text?null:await auth.currentUser!.updatePassword(_pass.text).then((value) => print('d2'),);
                     await _pickFile(result);
                     Future.delayed(const Duration(seconds:3), () {
                       print("donnnnnnnnnnnnnnnne");

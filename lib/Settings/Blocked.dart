@@ -72,6 +72,7 @@ unblock_function(var email)async{
                     "You’re currently not blocking anyone",
                     textAlign: TextAlign.center,
                     style: TextStyle(
+                      color: theme.TextColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
                     ),
@@ -80,7 +81,7 @@ unblock_function(var email)async{
                     "Need to block or report someone? Go to the profile of the person you want to block and select “Block user”.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.black45,
+                      color:provide.isDarkTheme?Colors.white60:Colors.black45,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),
